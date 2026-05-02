@@ -1,0 +1,65 @@
+<h2>Choose Links / Friends Page Style</h2>
+<p class="subtitle">How should your friend links be displayed? This page is common in Chinese blogs for mutual links.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option A — Avatar Cards Grid</div>
+        <div class="mockup-body" style="padding:12px;background:#f5f5fa;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:white;border-radius:6px;padding:8px;text-align:center;">
+              <div class="placeholder" style="width:36px;height:36px;border-radius:50%;margin:0 auto;">A</div>
+              <div style="font-weight:bold;font-size:10px;margin-top:4px;">Friend Name</div>
+              <div style="font-size:8px;color:#888;">description line</div>
+            </div>
+            <div style="background:white;border-radius:6px;padding:8px;text-align:center;">
+              <div class="placeholder" style="width:36px;height:36px;border-radius:50%;margin:0 auto;">B</div>
+              <div style="font-weight:bold;font-size:10px;margin-top:4px;">Another Friend</div>
+              <div style="font-size:8px;color:#888;">他们的简介</div>
+            </div>
+            <div style="background:white;border-radius:6px;padding:8px;text-align:center;">
+              <div class="placeholder" style="width:36px;height:36px;border-radius:50%;margin:0 auto;">C</div>
+              <div style="font-weight:bold;font-size:10px;margin-top:4px;">Third Friend</div>
+              <div style="font-size:8px;color:#888;">又一个博客</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option A — Avatar Cards Grid</h3>
+      <p>Avatar + name + short description in a card grid. Classic friends page style. Friendly and visual.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option B — List with Site Screenshots</div>
+        <div class="mockup-body" style="padding:12px;background:#f5f5fa;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:white;border-radius:6px;padding:8px;display:flex;gap:8px;">
+              <div class="placeholder" style="width:80px;height:50px;flex-shrink:0;border-radius:4px;">截图</div>
+              <div>
+                <div style="font-weight:bold;font-size:11px;">Friend Blog Name</div>
+                <div style="font-size:9px;color:#888;">Description here. A longer line to show the style.</div>
+              </div>
+            </div>
+            <div style="background:white;border-radius:6px;padding:8px;display:flex;gap:8px;">
+              <div class="placeholder" style="width:80px;height:50px;flex-shrink:0;border-radius:4px;">截图</div>
+              <div>
+                <div style="font-weight:bold;font-size:11px;">Another Blog</div>
+                <div style="font-size:9px;color:#888;">Their blog description goes here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option B — List with Screenshots</h3>
+      <p>Full-width list with site preview thumbnails. More information-rich. Better for fewer links.</p>
+    </div>
+  </div>
+</div>

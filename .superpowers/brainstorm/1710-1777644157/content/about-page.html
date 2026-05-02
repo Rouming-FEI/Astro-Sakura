@@ -1,0 +1,114 @@
+<h2>Choose About Page Layout</h2>
+<p class="subtitle">This page showcases your profile, site info, and GitHub commit history. How should they be arranged?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option A — Profile + Timeline</div>
+        <div class="mockup-body" style="padding:12px;">
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+            <div class="placeholder" style="width:60px;height:60px;border-radius:50%;">头像</div>
+            <div>
+              <div style="font-weight:bold;">Your Name</div>
+              <div style="font-size:11px;color:#888;">博主简介一行...</div>
+            </div>
+          </div>
+          <div style="border-left:2px solid #e91e63;padding-left:12px;margin-top:10px;">
+            <div style="font-size:11px;margin-bottom:6px;">
+              <span style="color:#e91e63;">●</span> <strong>2024-03-15</strong> &nbsp; feat: add dark mode — <span style="color:#888;">a1b2c3d</span>
+            </div>
+            <div style="font-size:11px;margin-bottom:6px;">
+              <span style="color:#e91e63;">●</span> <strong>2024-03-14</strong> &nbsp; fix: nav responsive — <span style="color:#888;">e4f5g6h</span>
+            </div>
+            <div style="font-size:11px;margin-bottom:6px;">
+              <span style="color:#e91e63;">○</span> <strong>2024-03-13</strong> &nbsp; docs: update README — <span style="color:#888;">i7j8k9l</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:#888;">📊 站点信息: 运行 X 天 · 发表 N 篇文章 · 总计 M 字</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option A — Profile + Timeline</h3>
+      <p>Avatar/profile on top, GitHub commits as a vertical timeline below. Classic and readable.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option B — Two Column</div>
+        <div class="mockup-body" style="padding:12px;display:flex;gap:12px;">
+          <div style="width:120px;flex-shrink:0;text-align:center;">
+            <div class="placeholder" style="width:60px;height:60px;border-radius:50%;margin:0 auto;">头像</div>
+            <div style="font-weight:bold;font-size:12px;margin-top:6px;">Name</div>
+            <div style="font-size:10px;color:#888;">bio...</div>
+            <div style="margin-top:8px;font-size:10px;background:#f0f0f0;padding:6px;border-radius:4px;">
+              <div>📝 N 篇文章</div>
+              <div>💬 M 条评论</div>
+              <div>🕐 X 天运行</div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:bold;margin-bottom:6px;">Recent Commits</div>
+            <div style="font-size:10px;margin-bottom:4px;">● feat: add dark mode <span style="color:#888;">a1b2c</span> <span style="color:#888;">3/15</span></div>
+            <div style="font-size:10px;margin-bottom:4px;">● fix: nav layout <span style="color:#888;">d4e5f</span> <span style="color:#888;">3/14</span></div>
+            <div style="font-size:10px;margin-bottom:4px;">○ chore: deps <span style="color:#888;">g6h7i</span> <span style="color:#888;">3/13</span></div>
+            <div style="font-size:10px;margin-bottom:4px;">● feat: search <span style="color:#888;">j8k9l</span> <span style="color:#888;">3/12</span></div>
+            <div style="font-size:10px;margin-bottom:4px;">● fix: css bug <span style="color:#888;">m0n1o</span> <span style="color:#888;">3/11</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option B — Two Column</h3>
+      <p>Profile + site stats on the left, commit timeline on the right. Good use of horizontal space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option C — Card-based Dashboard</div>
+        <div class="mockup-body" style="padding:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div style="background:#f9f9f9;border-radius:6px;padding:8px;text-align:center;">
+              <div style="font-size:18px;font-weight:bold;">42</div>
+              <div style="font-size:9px;color:#888;">篇文章</div>
+            </div>
+            <div style="background:#f9f9f9;border-radius:6px;padding:8px;text-align:center;">
+              <div style="font-size:18px;font-weight:bold;">365</div>
+              <div style="font-size:9px;color:#888;">运行天数</div>
+            </div>
+            <div style="background:#f9f9f9;border-radius:6px;padding:8px;text-align:center;">
+              <div style="font-size:18px;font-weight:bold;">120k</div>
+              <div style="font-size:9px;color:#888;">总字数</div>
+            </div>
+            <div style="background:#f9f9f9;border-radius:6px;padding:8px;text-align:center;">
+              <div style="font-size:18px;font-weight:bold;">89</div>
+              <div style="font-size:9px;color:#888;">评论</div>
+            </div>
+          </div>
+          <div style="border:1px solid #eee;border-radius:6px;padding:8px;">
+            <div style="font-size:11px;font-weight:bold;margin-bottom:4px;">Recent GitHub Activity</div>
+            <div style="display:flex;gap:2px;align-items:flex-end;">
+              <div style="width:14px;height:14px;background:#ebedf0;border-radius:2px;" title="0"></div>
+              <div style="width:14px;height:20px;background:#9be9a8;border-radius:2px;" title="2"></div>
+              <div style="width:14px;height:14px;background:#ebedf0;" title="0"></div>
+              <div style="width:14px;height:32px;background:#40c463;" title="5"></div>
+              <div style="width:14px;height:14px;background:#ebedf0;" title="0"></div>
+              <div style="width:14px;height:20px;background:#9be9a8;" title="3"></div>
+              <div style="width:14px;height:14px;background:#ebedf0;" title="0"></div>
+            </div>
+            <div style="font-size:9px;color:#888;margin-top:4px;">过去 7 天</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option C — Card Dashboard</h3>
+      <p>Stats cards + GitHub contribution graph. Modern dashboard feel. Visually rich.</p>
+    </div>
+  </div>
+</div>

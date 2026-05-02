@@ -1,0 +1,78 @@
+<h2>Choose Navigation Style</h2>
+<p class="subtitle">The nav bar stays visible and sets the site tone. It also hosts day/night toggle, search, and user menu.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option A — Transparent Overlay (Sakura-style)</div>
+        <div class="mockup-body">
+          <div style="background:linear-gradient(135deg,#667eea,#764ba2);height:160px;position:relative;padding:0;display:flex;flex-direction:column;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:white;">
+              <span style="font-weight:bold;">&#x685C; My Blog</span>
+              <div style="display:flex;gap:12px;font-size:12px;">
+                <span>Home</span><span>About</span><span>Links</span><span>🔍</span><span>🌙</span>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);font-size:13px;">封面区域</div>
+          </div>
+          <div style="padding:12px;font-size:11px;color:#888;">文章列表...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option A — Transparent Overlay</h3>
+      <p>Nav floats over the cover image, turns solid on scroll. Classic Sakurairo style. Most immersive.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option B — Solid Top Bar</div>
+        <div class="mockup-body">
+          <div style="background:white;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;">
+            <span style="font-weight:bold;">&#x685C; My Blog</span>
+            <div style="display:flex;gap:12px;font-size:12px;color:#555;">
+              <span>Home</span><span>About</span><span>Links</span><span>🔍</span><span>🌙</span>
+            </div>
+          </div>
+          <div style="background:linear-gradient(135deg,#667eea,#764ba2);height:100px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;">封面区域</div>
+          <div style="padding:12px;font-size:11px;color:#888;">文章列表...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option B — Solid Top Bar</h3>
+      <p>Always-visible navigation bar. Clean, professional. Better accessibility. Separated from cover.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option C — Left Sidebar Nav</div>
+        <div class="mockup-body">
+          <div style="display:flex;height:180px;">
+            <div style="width:100px;background:#2d2d3f;color:white;display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:14px;font-size:11px;">
+              <div>&#x685C;</div>
+              <div>🏠</div>
+              <div>👤</div>
+              <div>🔗</div>
+              <div>🔍</div>
+              <div>🌙</div>
+            </div>
+            <div style="flex:1;">
+              <div style="background:linear-gradient(135deg,#667eea,#764ba2);height:80px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;">封面图</div>
+              <div style="padding:12px;font-size:11px;color:#888;">文章列表...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option C — Left Sidebar Nav</h3>
+      <p>Modern sidebar nav. Distinctive, saves vertical space. Works great with icon-based navigation.</p>
+    </div>
+  </div>
+</div>

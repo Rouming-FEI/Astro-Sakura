@@ -1,0 +1,95 @@
+<h2>Choose Article Card Style</h2>
+<p class="subtitle">How should each blog post appear in the homepage list? Think about your content type (text vs multimedia).</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option A — Thumbnail Left</div>
+        <div class="mockup-body" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;border:1px solid #eee;border-radius:6px;padding:8px;">
+            <div class="placeholder" style="width:100px;height:70px;flex-shrink:0;border-radius:4px;">缩略图</div>
+            <div style="flex:1;">
+              <div style="font-weight:bold;font-size:13px;">文章标题在这</div>
+              <div style="font-size:10px;color:#888;margin:4px 0;">2024-01-15 · 分类 · 3 评论</div>
+              <div style="font-size:11px;color:#555;">摘要内容一两行...</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;border:1px solid #eee;border-radius:6px;padding:8px;">
+            <div class="placeholder" style="width:100px;height:70px;flex-shrink:0;border-radius:4px;">缩略图</div>
+            <div style="flex:1;">
+              <div style="font-weight:bold;font-size:13px;">另一篇文章标题</div>
+              <div style="font-size:10px;color:#888;margin:4px 0;">2024-01-10 · 分类 · 5 评论</div>
+              <div style="font-size:11px;color:#555;">摘要在这一行...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option A — Thumbnail Left</h3>
+      <p>Compact, information-dense. Good for text-heavy blogs. Shows more posts in less space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option B — Card with Cover Image</div>
+        <div class="mockup-body" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="border:1px solid #eee;border-radius:6px;overflow:hidden;">
+            <div class="placeholder" style="height:80px;border-radius:0;">封面大图</div>
+            <div style="padding:8px;">
+              <div style="font-weight:bold;font-size:13px;">文章标题在这</div>
+              <div style="font-size:10px;color:#888;">2024-01-15 · 3 评论</div>
+            </div>
+          </div>
+          <div style="border:1px solid #eee;border-radius:6px;overflow:hidden;">
+            <div class="placeholder" style="height:80px;border-radius:0;">封面大图</div>
+            <div style="padding:8px;">
+              <div style="font-weight:bold;font-size:13px;">另一篇文章标题</div>
+              <div style="font-size:10px;color:#888;">2024-01-10 · 5 评论</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option B — Card with Cover Image</h3>
+      <p>Visual-first design. Best for photo/art blogs. Each post has a prominent featured image.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Option C — Mixed / Hybrid</div>
+        <div class="mockup-body" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;border:1px solid #eee;border-radius:6px;padding:8px;">
+            <div class="placeholder" style="width:100px;height:70px;flex-shrink:0;border-radius:4px;">缩略图</div>
+            <div style="flex:1;">
+              <div style="font-weight:bold;font-size:13px;">Sticky / 置顶文章</div>
+              <div style="font-size:10px;color:#888;margin:4px 0;">2024-01-15 · 📌 置顶</div>
+              <div style="font-size:11px;color:#555;">摘要内容...</div>
+            </div>
+          </div>
+          <div style="border:1px solid #eee;border-radius:6px;overflow:hidden;">
+            <div class="placeholder" style="height:80px;border-radius:0;">封面大图</div>
+            <div style="padding:8px;">
+              <div style="font-weight:bold;font-size:13px;">普通文章带大图</div>
+              <div style="font-size:10px;color:#888;">2024-01-10</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid #eee;padding:8px 0;">
+            <div style="font-weight:bold;font-size:13px;">纯文字文章（无图）</div>
+            <div style="font-size:10px;color:#888;">2024-01-05</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option C — Mixed / Hybrid</h3>
+      <p>Each post uses its own layout based on whether it has a featured image. Flexible and content-aware.</p>
+    </div>
+  </div>
+</div>
