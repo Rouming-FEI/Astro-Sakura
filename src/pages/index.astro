@@ -1,0 +1,5 @@
+---
+import { siteConfig } from '../config/site';
+const url = new URL(Astro.url);
+return Astro.redirect(`/${siteConfig.defaultLanguage}/`, 302);
+---

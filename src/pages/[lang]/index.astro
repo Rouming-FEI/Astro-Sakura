@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Cover from '../../components/Cover.astro';
+import PostList from '../../components/PostList.astro';
+import { siteConfig } from '../../config/site';
+import { getDict } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  return siteConfig.languages.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params;
+const t = getDict(lang);
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft && data.lang === lang);
+const posts = allPosts
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .map(p => ({
+    title: p.data.title,
+    slug: p.slug,
+    date: p.data.date,
+    excerpt: p.data.excerpt,
+    thumbnail: p.data.thumbnail,
+    category: p.data.category,
+    tags: p.data.tags,
+    pinned: p.data.pinned,
+  }));
+---
+
+<BaseLayout {lang} title={siteConfig.title}>
+  <Cover {lang} />
+  <section class="home-content">
+    <PostList {posts} {lang} />
+  </section>
+</BaseLayout>
+
+<style>
+  .home-content {
+    max-width: var(--content-width);
+    margin: 40px auto 0;
+    padding: 0 20px;
+  }
+</style>
