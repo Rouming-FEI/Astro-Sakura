@@ -67,6 +67,15 @@ const pageTitle = title === siteConfig.title ? title : `${title} - ${siteConfig.
 <style is:global>
   html { scroll-behavior: smooth; }
 
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+
   @media (max-width: 640px) {
     :root {
       --content-width: 100%;

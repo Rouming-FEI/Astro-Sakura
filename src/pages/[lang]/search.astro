@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site';
+import { getDict } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  return siteConfig.languages.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params;
+const t = getDict(lang);
+---
+
+<BaseLayout title={`${t.search} - ${siteConfig.title}`} {lang}>
+  <div class="search-page">
+    <h1>{t.search}</h1>
+    <div id="search-input-wrapper"></div>
+    <div id="search-results"></div>
+  </div>
+</BaseLayout>
+
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet" is:inline />
+<script src="/pagefind/pagefind-ui.js" is:inline></script>
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof PagefindUI !== 'undefined') {
+      new (PagefindUI as any)({
+        element: '#search-input-wrapper',
+        showImages: false,
+      });
+    }
+  });
+</script>
+
+<style>
+  .search-page {
+    max-width: var(--content-width);
+    margin: 80px auto 0;
+    padding: 0 20px;
+    min-height: 60vh;
+  }
+
+  .search-page h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+</style>
