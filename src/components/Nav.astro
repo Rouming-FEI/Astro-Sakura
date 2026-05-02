@@ -1,0 +1,160 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { siteConfig } from '../config/site';
+import { getDict, locales } from '../i18n/utils';
+
+const { lang = siteConfig.defaultLanguage } = Astro.props as { lang?: string };
+const t = getDict(lang);
+const currentPath = Astro.url.pathname;
+
+const pages = [
+  { href: `/${lang}/`, label: t.home },
+  { href: `/${lang}/about/`, label: t.about },
+  { href: `/${lang}/links/`, label: t.links },
+  { href: `/${lang}/archive/`, label: t.archive },
+];
+
+const isHome = currentPath === '/' || currentPath === `/${lang}/`;
+---
+
+<header class="site-nav" class:list={{ transparent: isHome }}>
+  <div class="nav-inner">
+    <a href={`/${lang}/`} class="logo">{siteConfig.title}</a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      {pages.map(p => (
+        <a
+          href={p.href}
+          class="nav-link"
+          class:list={{ active: currentPath.startsWith(p.href) }}
+        >
+          {p.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="nav-actions">
+      <a href={`/${lang}/search/`} class="search-trigger" aria-label={t.search}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </a>
+
+      <div class="lang-switcher">
+        {locales.map(loc => (
+          <a href={`/${loc}/`} class:list={{ active: loc === lang }}>{loc.toUpperCase()}</a>
+        ))}
+      </div>
+
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<script>
+  const nav = document.querySelector('.site-nav')!;
+  if (nav.classList.contains('transparent')) {
+    const observer = new IntersectionObserver(
+      ([e]) => {
+        nav.classList.toggle('scrolled', !e!.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    const sentinel = document.createElement('div');
+    sentinel.style.position = 'absolute';
+    sentinel.style.top = '100vh';
+    sentinel.style.height = '1px';
+    sentinel.style.width = '1px';
+    document.body.prepend(sentinel);
+    observer.observe(sentinel);
+  }
+</script>
+
+<style>
+  .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: var(--nav-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+
+  .site-nav.transparent:not(.scrolled) {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .site-nav.transparent:not(.scrolled) .nav-link,
+  .site-nav.transparent:not(.scrolled) .logo {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .nav-inner {
+    max-width: calc(var(--content-width) + 200px);
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--primary);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+  .lang-switcher a {
+    color: var(--text-muted);
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+  .lang-switcher a.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .search-trigger {
+    color: var(--text-muted);
+    padding: 6px;
+    display: flex;
+  }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+  }
+</style>

@@ -1,0 +1,61 @@
+---
+import { siteConfig } from '../config/site';
+import { getDict } from '../i18n/utils';
+
+const { lang = siteConfig.defaultLanguage, stats } = Astro.props as {
+  lang?: string;
+  stats?: { posts: number; words: number; days: number };
+};
+const t = getDict(lang);
+---
+
+<footer class="site-footer">
+  {siteConfig.footer.aplayer.enabled && (
+    <div class="aplayer-container">
+      <div id="aplayer"></div>
+    </div>
+  )}
+
+  {stats && (
+    <p class="site-stats">
+      {t.runningDays}: {stats.days} {t.days} &nbsp;·&nbsp;
+      {t.totalPosts}: {stats.posts} {t.articles} &nbsp;·&nbsp;
+      {t.totalWords}: {stats.words.toLocaleString()} {t.words}
+    </p>
+  )}
+
+  <div class="footer-info">
+    <p>&copy; {new Date().getFullYear()} {siteConfig.title}. {t.allRightsReserved}.</p>
+    <p class="credit">Theme Sakurairo &middot; {t.poweredBy}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 60px;
+    padding: 24px 20px;
+    text-align: center;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    font-size: 0.825rem;
+    color: var(--text-muted);
+  }
+
+  .aplayer-container {
+    max-width: var(--content-width);
+    margin: 0 auto 16px;
+  }
+
+  .site-stats {
+    margin: 0 0 8px;
+  }
+
+  .footer-info {
+    margin: 0;
+  }
+
+  .credit {
+    margin-top: 4px;
+    font-size: 0.75rem;
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+import { siteConfig } from '../config/site';
+import { getDict } from '../i18n/utils';
+
+const { lang = siteConfig.defaultLanguage } = Astro.props as { lang?: string };
+const t = getDict(lang);
+
+const images = siteConfig.cover.images;
+const randomImage = siteConfig.cover.randomPool && images.length > 0
+  ? images[Math.floor(Math.random() * images.length)]
+  : (images[0] ?? null);
+---
+
+<div class="cover" style={randomImage ? `background-image: url(${randomImage})` : ''}>
+  <div id="particles-js" class="particles"></div>
+  <div class="cover-content">
+    <h1 class="cover-title">{siteConfig.title}</h1>
+    <p class="cover-desc">{siteConfig.description}</p>
+    <span class="scroll-hint">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </span>
+  </div>
+</div>
+
+<script>
+  import('https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js').then(() => {
+    const config = {
+      particles: {
+        number: { value: 50 },
+        color: { value: '#ffffff' },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.2, width: 1 },
+        move: { enable: true, speed: 2 },
+      },
+    };
+    (window as any).particlesJS?.('particles-js', config);
+  });
+</script>
+
+<style>
+  .cover {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: var(--cover-gradient);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .particles {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .cover-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+  }
+
+  .cover-title {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .cover-desc {
+    font-size: 1.05rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.6;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  @media (max-width: 640px) {
+    .cover-title { font-size: 1.75rem; }
+  }
+</style>
