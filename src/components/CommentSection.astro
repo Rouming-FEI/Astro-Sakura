@@ -1,0 +1,69 @@
+---
+import { siteConfig } from '../config/site';
+import { getDict } from '../i18n/utils';
+
+const { lang = siteConfig.defaultLanguage } = Astro.props as { lang?: string };
+const t = getDict(lang);
+const { repo, repoId, category, categoryId } = siteConfig.giscus;
+---
+
+<section class="comments">
+  <h3 class="comments-title">{t.comments}</h3>
+  <div
+    class="giscus"
+    data-repo={repo}
+    data-repo-id={repoId}
+    data-category={category}
+    data-category-id={categoryId}
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="preferred_color_scheme"
+    data-lang={lang}
+    loading="lazy"
+  ></div>
+</section>
+
+<script>
+  const script = document.createElement('script');
+  script.src = 'https://giscus.app/client.js';
+  script.setAttribute('data-repo', document.querySelector('.giscus')!.getAttribute('data-repo')!);
+  script.setAttribute('data-repo-id', document.querySelector('.giscus')!.getAttribute('data-repo-id')!);
+  script.setAttribute('data-category', document.querySelector('.giscus')!.getAttribute('data-category')!);
+  script.setAttribute('data-category-id', document.querySelector('.giscus')!.getAttribute('data-category-id')!);
+  script.setAttribute('data-mapping', 'pathname');
+  script.setAttribute('data-strict', '0');
+  script.setAttribute('data-reactions-enabled', '1');
+  script.setAttribute('data-emit-metadata', '0');
+  script.setAttribute('data-input-position', 'top');
+  script.setAttribute('data-theme', getTheme());
+  script.setAttribute('data-lang', document.querySelector('.giscus')!.getAttribute('data-lang')!);
+  script.crossOrigin = 'anonymous';
+  script.async = true;
+  document.querySelector('.giscus')!.appendChild(script);
+
+  const observer = new MutationObserver(() => {
+    const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+    if (iframe) {
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme: getTheme() } } },
+        'https://giscus.app'
+      );
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+</script>
+
+<style>
+  .comments {
+    max-width: var(--content-width);
+    margin: 40px auto 0;
+  }
+
+  .comments-title {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+</style>

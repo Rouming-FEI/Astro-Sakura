@@ -1,0 +1,96 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site';
+import { getDict } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  return siteConfig.languages.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params;
+const t = getDict(lang);
+
+const posts = await getCollection('posts', ({ data }) => !data.draft && data.lang === lang);
+const sorted = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+// Group by year
+const grouped: Record<string, typeof posts> = {};
+for (const post of sorted) {
+  const year = new Date(post.data.date).getFullYear().toString();
+  (grouped[year] ??= []).push(post);
+}
+---
+
+<BaseLayout title={`${t.archive} - ${siteConfig.title}`} {lang}>
+  <div class="archive-page">
+    <h1 class="page-title">{t.archive}</h1>
+
+    {Object.entries(grouped).map(([year, yearPosts]) => (
+      <section class="year-group">
+        <h2 class="year-title">{year}</h2>
+        <ul class="post-entries">
+          {yearPosts.map(post => (
+            <li>
+              <time datetime={post.data.date} class="post-date">
+                {new Date(post.data.date).toLocaleDateString(
+                  lang === 'ja' ? 'ja-JP' : lang === 'fr' ? 'fr-FR' : 'zh-CN'
+                )}
+              </time>
+              <a href={`/${lang}/posts/${post.id}/`}>{post.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-page {
+    max-width: var(--content-width);
+    margin: 80px auto 0;
+    padding: 0 20px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    margin: 0 0 24px;
+  }
+
+  .year-group {
+    margin-bottom: 24px;
+  }
+
+  .year-title {
+    font-size: 1.3rem;
+    margin: 0 0 8px;
+    color: var(--primary);
+  }
+
+  .post-entries {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-entries li {
+    display: flex;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-date {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .post-entries a {
+    color: var(--text);
+  }
+  .post-entries a:hover {
+    color: var(--primary);
+  }
+</style>

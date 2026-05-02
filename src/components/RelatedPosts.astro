@@ -1,0 +1,77 @@
+---
+import { getDict } from '../i18n/utils';
+
+interface Props {
+  posts: Array<{
+    title: string;
+    slug: string;
+    excerpt?: string;
+  }>;
+  lang: string;
+}
+
+const { posts, lang } = Astro.props;
+const t = getDict(lang);
+if (posts.length === 0) return null;
+---
+
+<section class="related-posts">
+  <h3>{t.relatedPosts}</h3>
+  <div class="related-grid">
+    {posts.map(p => (
+      <a href={`/${lang}/posts/${p.slug}/`} class="related-card">
+        <span class="related-title">{p.title}</span>
+        {p.excerpt && <span class="related-excerpt">{p.excerpt}</span>}
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .related-posts {
+    max-width: var(--content-width);
+    margin: 40px auto 0;
+  }
+
+  .related-posts h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .related-card {
+    display: block;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+  }
+  .related-card:hover {
+    border-color: var(--primary);
+  }
+
+  .related-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .related-excerpt {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

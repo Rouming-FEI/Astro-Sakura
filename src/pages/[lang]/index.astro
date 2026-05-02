@@ -18,7 +18,7 @@ const posts = allPosts
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
   .map(p => ({
     title: p.data.title,
-    slug: p.slug,
+    slug: p.id,
     date: p.data.date,
     excerpt: p.data.excerpt,
     thumbnail: p.data.thumbnail,

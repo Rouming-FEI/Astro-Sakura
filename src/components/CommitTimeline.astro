@@ -1,0 +1,85 @@
+---
+import { getDict } from '../i18n/utils';
+import type { CommitEntry } from '../lib/github';
+
+interface Props {
+  commits: CommitEntry[];
+  lang: string;
+}
+
+const { commits, lang } = Astro.props;
+const t = getDict(lang);
+---
+
+<div class="commits-section">
+  <h2>{t.recentCommits}</h2>
+  <div class="commit-timeline">
+    {commits.map(c => (
+      <div class="commit-entry">
+        <span class="commit-dot"></span>
+        <time datetime={c.date} class="commit-date">
+          {new Date(c.date).toLocaleDateString(
+            lang === 'ja' ? 'ja-JP' : lang === 'fr' ? 'fr-FR' : 'zh-CN'
+          )}
+        </time>
+        <span class="commit-msg">{c.message}</span>
+        <code class="commit-hash">{c.hash}</code>
+      </div>
+    ))}
+    {commits.length === 0 && (
+      <p class="empty">No commits to show.</p>
+    )}
+  </div>
+</div>
+
+<style>
+  .commits-section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .commit-timeline {
+    border-left: 2px solid var(--primary);
+    padding-left: 16px;
+  }
+
+  .commit-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    position: relative;
+  }
+
+  .commit-dot {
+    position: absolute;
+    left: -22px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .commit-date {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .commit-msg {
+    flex: 1;
+    color: var(--text);
+  }
+
+  .commit-hash {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .empty {
+    color: var(--text-muted);
+  }
+</style>
