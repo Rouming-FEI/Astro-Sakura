@@ -1,47 +1,46 @@
 :root {
-  /* Light mode */
-  --bg: #f5f5fa;
+  /* Light mode - Sky x Violet Fantasy */
+  --bg: rgba(235, 238, 250, 0.65);
   --surface: #ffffff;
-  --accent: #d8e4f8;
-  --primary: #7090d0;
-  --primary-hover: #5a7abf;
-  --text: #3e3865;
-  --text-muted: #888888;
-  --border: #e0e0e8;
-  --shadow: 0 1px 3px rgba(62, 56, 101, 0.08);
+  --accent: #eae7f6;
+  --primary: #7595e8;
+  --primary-hover: #5f80db;
+  --text: #383360;
+  --text-muted: #9590bd;
+  --border: #e0ddf0;
+  --shadow: 0 1px 3px rgba(56, 51, 96, 0.08);
 
   --nav-height: 60px;
   --content-width: 780px;
   --sidebar-width: 240px;
   --radius: 8px;
 
-  --font-serif: 'Noto Serif SC', serif;
-  --font-sans: 'Noto Sans SC', system-ui, sans-serif;
-  --font-mono: 'Fira Code', monospace;
-
-  --cover-gradient: linear-gradient(135deg, #667eea, #764ba2);
+  --cover-gradient: linear-gradient(135deg, #7595e8, #a594e8);
 }
 
 html.dark {
-  --bg: #1a1a2e;
-  --surface: #252540;
-  --accent: #2d2d50;
-  --primary: #7090d0;
-  --primary-hover: #8aa5e0;
-  --text: #c8d8f0;
-  --text-muted: #aaaaaa;
-  --border: #3a3a58;
+  /* Night mode - Starlit Violet Fantasy */
+  --bg: rgba(16, 14, 36, 0.6);
+  --surface: #1f1b3a;
+  --accent: #2d2750;
+  --primary: #b0bcf2;
+  --primary-hover: #c4cef6;
+  --text: #e4e0f5;
+  --text-muted: #9e97c8;
+  --border: #363158;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 @media (prefers-color-scheme: dark) {
   html:not(.light) {
-    --bg: #1a1a2e;
-    --surface: #252540;
-    --accent: #2d2d50;
-    --text: #c8d8f0;
-    --text-muted: #aaaaaa;
-    --border: #3a3a58;
+    --bg: rgba(16, 14, 36, 0.6);
+    --surface: #1f1b3a;
+    --accent: #2d2750;
+    --primary: #b0bcf2;
+    --primary-hover: #c4cef6;
+    --text: #e4e0f5;
+    --text-muted: #9e97c8;
+    --border: #363158;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }

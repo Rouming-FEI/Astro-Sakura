@@ -1,15 +1,15 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { siteConfig } from './src/config/site';
 
 export default defineConfig({
-  site: 'https://example.com',
+  site: siteConfig.siteUrl,
   integrations: [sitemap()],
-  i18n: {
-    defaultLocale: 'zh',
-    locales: ['zh', 'ja', 'fr'],
-    routing: {
-      prefixDefaultLocale: true,
-    },
+  markdown: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [rehypeKatex],
   },
   vite: {
     css: {

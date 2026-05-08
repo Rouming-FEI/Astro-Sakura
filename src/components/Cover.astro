@@ -1,27 +1,53 @@
 ---
 import { siteConfig } from '../config/site';
-import { getDict } from '../i18n/utils';
 
-const { lang = siteConfig.defaultLanguage } = Astro.props as { lang?: string };
-const t = getDict(lang);
-
-const images = siteConfig.cover.images;
-const randomImage = siteConfig.cover.randomPool && images.length > 0
-  ? images[Math.floor(Math.random() * images.length)]
-  : (images[0] ?? null);
+const images = siteConfig.cover.images ?? [];
+const useRandom = siteConfig.cover.randomPool && images.length > 1;
+const coverImage = images.length > 0
+  ? (useRandom ? images[Math.floor(Math.random() * images.length)] : images[0])
+  : null;
 ---
 
-<div class="cover" style={randomImage ? `background-image: url(${randomImage})` : ''}>
+<div class="cover" style={coverImage ? `background-image: url('${coverImage}');` : ''}>
   <div id="particles-js" class="particles"></div>
   <div class="cover-content">
     <h1 class="cover-title">{siteConfig.title}</h1>
     <p class="cover-desc">{siteConfig.description}</p>
-    <span class="scroll-hint">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </span>
+    {siteConfig.social.enabled && (
+      <div class="social-icons">
+        {siteConfig.social.github && (
+          <a href={siteConfig.social.github} target="_blank" rel="noopener" title="GitHub">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          </a>
+        )}
+        {siteConfig.social.bilibili && (
+          <a href={siteConfig.social.bilibili} target="_blank" rel="noopener" title="Bilibili">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>
+          </a>
+        )}
+        {siteConfig.social.twitter && (
+          <a href={siteConfig.social.twitter} target="_blank" rel="noopener" title="X (Twitter)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        )}
+        {siteConfig.social.zhihu && (
+          <a href={siteConfig.social.zhihu} target="_blank" rel="noopener" title="知乎">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><text x="2" y="18" font-size="18" font-weight="bold">知</text></svg>
+          </a>
+        )}
+        {siteConfig.social.email && (
+          <a href={`mailto:${siteConfig.social.email}`} title="Email">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
+          </a>
+        )}
+      </div>
+    )}
   </div>
+  <span class="scroll-hint">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #fff">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </span>
 </div>
 
 <script>
@@ -36,8 +62,30 @@ const randomImage = siteConfig.cover.randomPool && images.length > 0
         move: { enable: true, speed: 2 },
       },
     };
-    (window as any).particlesJS?.('particles-js', config);
+    const win = window as any;
+    if (win.particlesJS) win.particlesJS('particles-js', config);
   });
+</script>
+
+<script>
+  const descEl = document.querySelector('.cover-desc');
+  if (descEl) {
+    const text = descEl.textContent || '';
+    descEl.textContent = '';
+    descEl.style.borderRight = '2px solid rgba(255,255,255,0.7)';
+    descEl.style.display = 'inline-block';
+    descEl.style.maxWidth = 'fit-content';
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        descEl.textContent += text[i];
+        i++;
+      } else {
+        clearInterval(interval);
+        descEl.style.borderRight = 'none';
+      }
+    }, 100);
+  }
 </script>
 
 <style>
@@ -45,9 +93,7 @@ const randomImage = siteConfig.cover.randomPool && images.length > 0
     position: relative;
     width: 100%;
     height: 100vh;
-    background: var(--cover-gradient);
-    background-size: cover;
-    background-position: center;
+    background: var(--cover-gradient) center / cover no-repeat fixed;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,12 +128,44 @@ const randomImage = siteConfig.cover.randomPool && images.length > 0
     margin: 0;
   }
 
+  .social-icons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .social-icons a {
+    color: rgba(255,255,255,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .social-icons a:hover {
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    z-index: 3;
+    pointer-events: none;
+  }
+
   .scroll-hint {
     position: absolute;
     bottom: 32px;
     left: 50%;
+    z-index: 2;
     transform: translateX(-50%);
-    opacity: 0.6;
+    opacity: 0.85;
     animation: bounce 2s infinite;
   }
 

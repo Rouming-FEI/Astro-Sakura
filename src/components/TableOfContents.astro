@@ -1,17 +1,15 @@
 ---
-import { getDict } from '../i18n/utils';
+import zh from '../i18n/zh';
 
 interface Props {
   headings: { depth: number; text: string; slug: string }[];
-  lang: string;
 }
 
-const { headings, lang } = Astro.props;
-const t = getDict(lang);
+const { headings } = Astro.props;
 ---
 
-<nav class="toc" aria-label={t.toc}>
-  <span class="toc-title">{t.toc}</span>
+<nav class="toc" aria-label={zh.toc}>
+  <span class="toc-title">{zh.toc}</span>
   <ul>
     {headings.filter(h => h.depth <= 3).map(h => (
       <li class={`toc-depth-${h.depth}`}>
@@ -25,14 +23,20 @@ const t = getDict(lang);
   .toc {
     position: sticky;
     top: calc(var(--nav-height) + 20px);
+    float: left;
     width: 220px;
-    flex-shrink: 0;
-    align-self: flex-start;
+    margin-left: -260px;
+    margin-right: 40px;
     max-height: calc(100vh - var(--nav-height) - 40px);
     overflow-y: auto;
+    scrollbar-width: none;
     font-size: 0.85rem;
     padding-right: 16px;
     border-right: 1px solid var(--border);
+  }
+
+  .toc::-webkit-scrollbar {
+    display: none;
   }
 
   .toc-title {
@@ -57,9 +61,13 @@ const t = getDict(lang);
   .toc-depth-3 { padding-left: 12px; font-size: 0.8rem; }
 
   .toc a {
-    color: var(--text-muted);
+    color: color-mix(in srgb, var(--text) 55%, var(--bg));
+    text-decoration: none;
+    transition: color 0.2s;
   }
-  .toc a:hover {
+
+  .toc a:hover,
+  .toc a:focus-visible {
     color: var(--primary);
   }
 

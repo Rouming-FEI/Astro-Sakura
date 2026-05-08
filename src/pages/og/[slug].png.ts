@@ -1,5 +1,10 @@
+import sharp from 'sharp';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../../config/site';
+
+function esc(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -12,14 +17,15 @@ export async function getStaticPaths() {
 export async function GET({ props }: any) {
   const { title, date } = props;
   const svg = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="#f5f5fa"/>
-    <rect y="500" width="100%" height="130" fill="#7090d0"/>
-    <text x="60" y="350" font-family="serif" font-size="48" fill="#3e3865">${title}</text>
-    <text x="60" y="580" font-family="sans-serif" font-size="28" fill="#fff">${siteConfig.title}</text>
-    <text x="60" y="420" font-family="sans-serif" font-size="22" fill="#888">${date}</text>
+    <rect width="100%" height="100%" fill="#ebeeff"/>
+    <rect y="500" width="100%" height="130" fill="#7595e8"/>
+    <text x="60" y="350" font-family="serif" font-size="48" fill="#383360">${esc(title)}</text>
+    <text x="60" y="580" font-family="sans-serif" font-size="28" fill="#fff">${esc(siteConfig.title)}</text>
+    <text x="60" y="420" font-family="sans-serif" font-size="22" fill="#9590bd">${esc(date)}</text>
   </svg>`;
 
-  return new Response(svg, {
-    headers: { 'Content-Type': 'image/svg+xml' },
+  const png = await sharp(Buffer.from(svg)).png().toBuffer();
+  return new Response(png, {
+    headers: { 'Content-Type': 'image/png' },
   });
 }

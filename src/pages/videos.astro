@@ -1,0 +1,540 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import zh from '../i18n/zh';
+
+const uid = siteConfig.bilibili.uid || '';
+---
+
+<BaseLayout title={zh.videos}>
+  <div class="videos-page" data-uid={uid}>
+    <h1 class="page-title">{zh.videos}</h1>
+
+    {
+      !uid ? (
+        <div class="placeholder">
+          <div class="placeholder-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+              <rect x="2" y="3" width="20" height="18" rx="2"/>
+              <polygon points="10,8 16,12 10,16" fill="currentColor" opacity="0.3"/>
+            </svg>
+          </div>
+          <p class="placeholder-text">请在站点配置中设置 Bilibili UID 以显示关注视频。</p>
+          <p class="placeholder-hint">
+            编辑 <code>src/config/site.ts</code> 中的 <code>bilibili.uid</code> 字段。
+          </p>
+        </div>
+      ) : (
+        <>
+          <div id="videos-loading" class="videos-grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div class="skeleton-card">
+                <div class="skeleton-thumb"></div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line skeleton-line--title"></div>
+                  <div class="skeleton-line skeleton-line--short"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div id="videos-error" class="error hidden">
+            <div class="error-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <p class="error-message"></p>
+            <button class="retry-btn" type="button">重试</button>
+          </div>
+
+          <div id="videos-grid" class="videos-grid hidden"></div>
+
+          <div id="video-modal" class="modal-overlay hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+              <button class="modal-close" type="button" aria-label="关闭">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+              <div class="modal-player">
+                <iframe
+                  id="video-iframe"
+                  src=""
+                  allowfullscreen
+                  allow="autoplay; fullscreen"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .videos-page {
+    max-width: 1100px;
+    margin: 80px auto 0;
+    padding: 0 20px 60px;
+  }
+
+  .page-title {
+    text-align: center;
+    font-size: 2rem;
+    font-family: var(--font-serif);
+    margin: 0 0 40px;
+    color: var(--text);
+  }
+
+  /* ---------- Grid ---------- */
+  .videos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    .videos-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .videos-grid {
+      grid-template-columns: 1fr;
+    }
+    .videos-page {
+      padding: 0 16px 40px;
+    }
+  }
+
+  /* ---------- Video Card ---------- */
+  .video-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .video-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(56, 51, 96, 0.15);
+  }
+
+  html.dark .video-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ---------- Thumbnail ---------- */
+  .card-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--accent);
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .video-card:hover .card-thumb img {
+    transform: scale(1.08);
+  }
+
+  .card-duration {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- Card Info ---------- */
+  .card-info {
+    padding: 12px 14px 14px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 8px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  /* ---------- Skeleton ---------- */
+  .skeleton-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .skeleton-thumb {
+    aspect-ratio: 16 / 9;
+    background: var(--accent);
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .skeleton-line {
+    height: 14px;
+    border-radius: 4px;
+    background: var(--accent);
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-line--title {
+    width: 90%;
+    height: 16px;
+  }
+
+  .skeleton-line--short {
+    width: 55%;
+  }
+
+  @keyframes shimmer {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.4; }
+    100% { opacity: 1; }
+  }
+
+  /* ---------- Placeholder ---------- */
+  .placeholder {
+    text-align: center;
+    padding: 80px 20px 40px;
+  }
+
+  .placeholder-icon {
+    margin-bottom: 20px;
+    color: var(--primary);
+  }
+
+  .placeholder-text {
+    color: var(--text);
+    font-size: 1rem;
+    margin: 0 0 8px;
+  }
+
+  .placeholder-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .placeholder-hint code {
+    background: var(--accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    color: var(--primary);
+  }
+
+  /* ---------- Error ---------- */
+  .error {
+    text-align: center;
+    padding: 80px 20px 40px;
+  }
+
+  .error-icon {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .error-message {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin: 0 0 20px;
+  }
+
+  .retry-btn {
+    display: inline-block;
+    font-size: 0.9rem;
+    color: #fff;
+    background: var(--primary);
+    border: none;
+    padding: 8px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: background 0.2s ease;
+  }
+
+  .retry-btn:hover {
+    background: var(--primary-hover);
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fade-in 0.25s ease;
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    position: relative;
+    width: min(90vw, 960px);
+    animation: modal-enter 0.3s ease;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 0;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-close:hover {
+    opacity: 1;
+  }
+
+  .modal-player {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-player iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes modal-enter {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* ---------- Utilities ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-card,
+    .video-card .card-thumb img,
+    .skeleton-thumb,
+    .skeleton-line {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var page = document.querySelector('.videos-page');
+    if (!page) return;
+
+    var uid = page.dataset.uid;
+    if (!uid) return;
+
+    var loadingEl = document.getElementById('videos-loading');
+    var gridEl = document.getElementById('videos-grid');
+    var errorEl = document.getElementById('videos-error');
+    var errorMsgEl = errorEl.querySelector('.error-message');
+    var retryBtn = errorEl.querySelector('.retry-btn');
+    var modalEl = document.getElementById('video-modal');
+    var iframeEl = document.getElementById('video-iframe');
+    var modalClose = modalEl.querySelector('.modal-close');
+    var modalBackdrop = modalEl.querySelector('.modal-backdrop');
+
+    /* ----- Helpers ----- */
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatCount(n) {
+      n = Number(n);
+      if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return String(n);
+    }
+
+    function formatDuration(sec) {
+      var s = Number(sec) || 0;
+      var m = Math.floor(s / 60);
+      var rs = Math.floor(s % 60);
+      if (m >= 60) {
+        var h = Math.floor(m / 60);
+        m = m % 60;
+        return h + ':' + String(m).padStart(2, '0') + ':' + String(rs).padStart(2, '0');
+      }
+      return m + ':' + String(rs).padStart(2, '0');
+    }
+
+    function formatDate(ts) {
+      var d = new Date(Number(ts) * 1000);
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
+    /* ----- Render ----- */
+    function renderVideos(vlist) {
+      var html = '';
+      for (var i = 0; i < vlist.length; i++) {
+        var v = vlist[i];
+        html +=
+          '<div class="video-card" data-bvid="' + escapeHtml(v.bvid) + '">' +
+            '<div class="card-thumb">' +
+              '<img src="' + escapeHtml(v.pic) + '" alt="' + escapeHtml(v.title) + '" loading="lazy" />' +
+              '<span class="card-duration">' + formatDuration(v.length) + '</span>' +
+            '</div>' +
+            '<div class="card-info">' +
+              '<h3 class="card-title">' + escapeHtml(v.title) + '</h3>' +
+              '<div class="card-meta">' +
+                '<span>&#9654; ' + formatCount(v.play) + '</span>' +
+                '<span>&#x1F4AC; ' + formatCount(v.video_review) + '</span>' +
+                '<span>' + formatDate(v.created) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      }
+      gridEl.innerHTML = html;
+
+      var cards = gridEl.querySelectorAll('.video-card');
+      for (var j = 0; j < cards.length; j++) {
+        cards[j].addEventListener('click', function () {
+          openModal(this.dataset.bvid);
+        });
+      }
+    }
+
+    function showError(msg) {
+      loadingEl.classList.add('hidden');
+      gridEl.classList.add('hidden');
+      errorEl.classList.remove('hidden');
+      errorMsgEl.textContent = msg || '加载失败，请稍后重试';
+    }
+
+    /* ----- Modal ----- */
+    function openModal(bvid) {
+      iframeEl.src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid);
+      modalEl.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      iframeEl.src = '';
+      modalEl.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modalEl.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    /* ----- Fetch ----- */
+    function fetchVideos() {
+      loadingEl.classList.remove('hidden');
+      gridEl.classList.add('hidden');
+      errorEl.classList.add('hidden');
+
+      var url = 'https://api.bilibili.com/x/space/wbi/arc/search?mid=' +
+        encodeURIComponent(uid) + '&ps=30&pn=1';
+
+      fetch(url)
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (data.code !== 0) throw new Error(data.message || 'API 返回错误');
+          var vlist = data.data && data.data.list && data.data.list.vlist;
+          if (!vlist || vlist.length === 0) {
+            showError('暂无视频');
+            return;
+          }
+          renderVideos(vlist);
+          loadingEl.classList.add('hidden');
+          gridEl.classList.remove('hidden');
+        })
+        .catch(function (err) {
+          console.error('Bilibili API error:', err);
+          showError(err.message || '加载失败，请稍后重试');
+        });
+    }
+
+    retryBtn.addEventListener('click', fetchVideos);
+
+    /* ----- Start ----- */
+    fetchVideos();
+  })();
+</script>

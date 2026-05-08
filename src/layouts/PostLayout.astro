@@ -3,61 +3,199 @@ import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import RelatedPosts from '../components/RelatedPosts.astro';
 import CommentSection from '../components/CommentSection.astro';
-import { siteConfig } from '../config/site';
 
 interface Props {
   title: string;
   date: string;
-  lang: string;
+  updated?: string;
   description?: string;
   ogImage?: string;
   category?: string;
   tags?: string[];
+  readingMinutes?: number;
   headings?: { depth: number; text: string; slug: string }[];
   relatedPosts?: Array<{ title: string; slug: string; excerpt?: string }>;
 }
 
 const {
-  title, date, lang, description, ogImage,
-  category, tags = [], headings = [],
-  relatedPosts = [],
+  title, date, updated, description, ogImage,
+  category, tags = [], readingMinutes = 1,
+  headings = [], relatedPosts = [],
 } = Astro.props;
 
-const formattedDate = new Date(date).toLocaleDateString(
-  lang === 'ja' ? 'ja-JP' : lang === 'fr' ? 'fr-FR' : 'zh-CN'
-);
+const dateObj = new Date(date);
+const formattedDate = dateObj.toLocaleDateString('zh-CN');
+const dateYear = dateObj.getFullYear().toString();
+const hasUpdate = updated && updated !== date;
+const formattedUpdated = hasUpdate ? new Date(updated!).toLocaleDateString('zh-CN') : '';
 ---
 
-<BaseLayout {title} {description} {ogImage} {lang}>
+<BaseLayout {title} {description} {ogImage}>
   <article class="post-article">
     <header class="post-header">
       <h1 class="post-title">{title}</h1>
       <div class="post-meta">
-        <time datetime={date}>{formattedDate}</time>
-        {category && <span class="category">{category}</span>}
+        {category && (
+          <a href={`/categories/?category=${encodeURIComponent(category)}`} class="meta-category">{category}</a>
+        )}
+        <span class="meta-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          {readingMinutes} 分钟
+        </span>
+        <a href={`/categories/?year=${dateYear}`} class="meta-date">
+          <time datetime={date}>{formattedDate}</time>
+        </a>
+        {hasUpdate && <span class="meta-updated">更新于 {formattedUpdated}</span>}
       </div>
       {tags.length > 0 && (
         <div class="tags">
-          {tags.map(t => <span class="tag">{t}</span>)}
+          {tags.map(t => (
+            <a href={`/categories/?tag=${encodeURIComponent(t)}`} class="tag">{t}</a>
+          ))}
         </div>
       )}
     </header>
 
     <div class="post-wrapper">
-      {headings.length > 0 && <TableOfContents {headings} {lang} />}
+      {headings.length > 0 && <TableOfContents {headings} />}
       <div class="post-content">
         <slot />
       </div>
     </div>
 
-    {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} {lang} />}
-    <CommentSection {lang} />
+    {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} />}
+    <CommentSection />
   </article>
 </BaseLayout>
 
+<script>
+  (function () {
+    // --- Copy buttons for code blocks ---
+    var pres = document.querySelectorAll('.post-content pre');
+    pres.forEach(function (pre) {
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = '复制';
+      btn.addEventListener('click', function () {
+        var code = pre.querySelector('code');
+        var text = code ? code.textContent || '' : '';
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = '已复制';
+          btn.classList.add('copied');
+          setTimeout(function () {
+            btn.textContent = '复制';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      });
+      pre.appendChild(btn);
+    });
+
+    // --- Link cards: wrap standalone links ---
+    var postContent = document.querySelector('.post-content');
+    if (postContent) {
+      var paragraphs = postContent.querySelectorAll('p');
+      paragraphs.forEach(function (p) {
+        var link = p.querySelector('a');
+        if (link && p.childNodes.length === 1 && p.childNodes[0] === link &&
+            p.textContent.trim() === link.textContent.trim()) {
+          var url = link.href;
+          var card = document.createElement('a');
+          card.className = 'link-card';
+          card.href = url;
+          card.target = link.target;
+          card.rel = link.rel || 'noopener noreferrer';
+          card.innerHTML =
+            '<span class="link-card-title">' +
+            '<span class="link-card-spinner"></span>' +
+            (link.textContent || url) +
+            ' <span class="link-card-icon">↗</span></span>' +
+            '<span class="link-card-url">' + url + '</span>';
+          p.parentNode.replaceChild(card, p);
+
+          // Fetch OG preview
+          fetch('/api/link-preview?url=' + encodeURIComponent(url))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.title && !data.error) {
+                var titleEl = card.querySelector('.link-card-title');
+                if (titleEl) {
+                  titleEl.innerHTML = (data.siteName ? '<span class="link-card-site">' + data.siteName + '</span>' : '') +
+                    data.title + ' <span class="link-card-icon">↗</span>';
+                }
+                if (data.description) {
+                  var descEl = card.querySelector('.link-card-desc');
+                  if (descEl) descEl.textContent = data.description;
+                }
+                var urlEl = card.querySelector('.link-card-url');
+                if (urlEl) urlEl.textContent = data.url || url;
+              }
+            })
+            .catch(function () { /* keep fallback */ });
+        }
+      });
+    }
+
+    // --- Link hover tooltip ---
+    var tooltip = document.createElement('div');
+    tooltip.className = 'link-preview-tooltip';
+    document.body.appendChild(tooltip);
+
+    var activeLink = null;
+    var hideTimer = null;
+    var showTimer = null;
+
+    function showTooltip(link, e) {
+      clearTimeout(hideTimer);
+      if (activeLink === link) return;
+      hideTooltip();
+      activeLink = link;
+      showTimer = setTimeout(function () {
+        tooltip.innerHTML =
+          '<div class="lp-title">' + link.textContent.trim() + '</div>' +
+          '<div class="lp-url">' + link.href + '</div>';
+        positionTooltip(e);
+        tooltip.classList.add('visible');
+      }, 300);
+    }
+
+    function positionTooltip(e) {
+      var x = e.clientX;
+      var y = e.clientY;
+      var tw = tooltip.offsetWidth;
+      var th = tooltip.offsetHeight;
+      if (x + tw + 16 > window.innerWidth) x = window.innerWidth - tw - 16;
+      if (y + th + 16 > window.innerHeight) y = y - th - 16;
+      else y = y + 16;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      clearTimeout(showTimer);
+      tooltip.classList.remove('visible');
+      activeLink = null;
+    }
+
+    document.addEventListener('mouseover', function (e) {
+      var link = e.target.closest('.post-content a[href]');
+      if (!link || link.classList.contains('link-card')) { hideTooltip(); return; }
+      showTooltip(link, e);
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (activeLink) positionTooltip(e);
+    });
+    document.addEventListener('mouseout', function (e) {
+      var link = e.target.closest('.post-content a[href]');
+      if (link && e.relatedTarget && link.contains(e.relatedTarget)) return;
+      hideTimer = setTimeout(hideTooltip, 150);
+    });
+  })();
+</script>
+
 <style>
   .post-article {
-    max-width: calc(var(--content-width) + 280px);
+    max-width: calc(var(--content-width) + 320px);
     margin: 80px auto 0;
     padding: 0 20px;
   }
@@ -70,15 +208,64 @@ const formattedDate = new Date(date).toLocaleDateString(
 
   .post-title {
     font-size: 2rem;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
   }
 
   .post-meta {
-    font-size: 0.875rem;
-    color: var(--text-muted);
     display: flex;
-    gap: 12px;
+    align-items: center;
+    gap: 16px;
     justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+  }
+
+  .post-meta > * {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .meta-category {
+    font-weight: 600;
+    color: #fff;
+    background: var(--primary);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.2;
+  }
+  .meta-category:hover {
+    background: var(--primary-hover);
+  }
+
+  .meta-time {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  .meta-time svg {
+    opacity: 0.5;
+  }
+
+  .meta-date {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+  }
+  .meta-date:hover {
+    color: var(--primary);
+  }
+
+  .meta-updated {
+    font-size: 0.78rem;
+    color: var(--primary);
+    opacity: 0.8;
   }
 
   .tags {
@@ -91,27 +278,142 @@ const formattedDate = new Date(date).toLocaleDateString(
   .tag {
     font-size: 0.75rem;
     background: var(--accent);
-    padding: 3px 10px;
+    color: var(--text-muted);
+    padding: 4px 10px;
     border-radius: 12px;
+    text-decoration: none;
+    transition: color 0.2s, background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+  .tag:hover {
+    color: var(--primary);
+    background: rgba(117, 149, 232, 0.1);
   }
 
   .post-wrapper {
-    display: flex;
-    gap: 40px;
     max-width: var(--content-width);
     margin: 0 auto;
   }
 
   .post-content {
-    flex: 1;
-    min-width: 0;
-    line-height: 1.8;
+    display: flow-root;
+    line-height: 1.85;
     font-size: 1rem;
   }
 
-  @media (max-width: 900px) {
-    .post-wrapper {
-      flex-direction: column;
-    }
+  .post-content :global(p) {
+    margin: 0 0 1.2em;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  .post-content :global(h2),
+  .post-content :global(h3),
+  .post-content :global(h4) {
+    transition: color 0.2s;
+  }
+  .post-content :global(h2):hover,
+  .post-content :global(h3):hover,
+  .post-content :global(h4):hover {
+    color: var(--primary);
+  }
+
+  .post-content :global(h2)::before,
+  .post-content :global(h3)::before,
+  .post-content :global(h4)::before {
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 400;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--text-muted);
+  }
+  .post-content :global(h2)::before { content: '## '; }
+  .post-content :global(h3)::before { content: '### '; }
+  .post-content :global(h4)::before { content: '#### '; }
+  .post-content :global(h2):hover::before,
+  .post-content :global(h3):hover::before,
+  .post-content :global(h4):hover::before {
+    opacity: 0.5;
+  }
+
+  .post-content :global(h2) {
+    font-size: 1.5rem;
+    margin: 2em 0 0.6em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-content :global(h3) {
+    font-size: 1.25rem;
+    margin: 1.8em 0 0.5em;
+  }
+
+  .post-content :global(h4) {
+    font-size: 1.1rem;
+    margin: 1.5em 0 0.4em;
+  }
+
+  .post-content :global(blockquote) {
+    margin: 1.2em 0;
+    padding: 8px 20px;
+    border-left: 3px solid var(--primary);
+    background: var(--accent);
+    border-radius: 0 6px 6px 0;
+    color: var(--text-muted);
+  }
+
+  .post-content :global(blockquote p) {
+    margin: 0.5em 0;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    padding-left: 1.5em;
+    margin: 0.8em 0;
+  }
+
+  .post-content :global(li) {
+    margin-bottom: 0.3em;
+  }
+
+  .post-content :global(hr) {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2.5em 0;
+  }
+
+  .post-content :global(a) {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .post-content :global(a:hover) {
+    color: var(--primary-hover);
+  }
+
+  .post-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+  }
+
+  .post-content :global(th),
+  .post-content :global(td) {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .post-content :global(th) {
+    background: var(--accent);
+    font-weight: 600;
   }
 </style>

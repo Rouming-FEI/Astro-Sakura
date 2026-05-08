@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map(post => ({
+    params: { slug: post.id },
+  }));
+}
+
+const { slug } = Astro.params;
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const post = posts.find(p => p.id === slug);
+
+if (!post) return Astro.redirect('/');
+
+const { Content, headings } = await render(post);
+
+const relatedPosts = posts
+  .filter(p => p.id !== slug)
+  .filter(p => p.data.tags?.some(t => post.data.tags?.includes(t)))
+  .slice(0, 3)
+  .map(p => ({
+    title: p.data.title,
+    slug: p.id,
+    excerpt: p.data.excerpt,
+  }));
+
+// Estimate reading time: ~400 Chinese chars/min, ~200 English words/min
+const raw = post.body || '';
+const chineseChars = (raw.match(/[一-鿿㐀-䶿]/g) || []).length;
+const englishWords = (raw.match(/[a-zA-Z]+/g) || []).length;
+const readingMinutes = Math.max(1, Math.ceil(chineseChars / 400 + englishWords / 200));
+---
+
+<PostLayout
+  title={post.data.title}
+  date={post.data.date}
+  updated={post.data.updated}
+  description={post.data.excerpt}
+  ogImage={post.data.thumbnail}
+  category={post.data.category}
+  tags={post.data.tags}
+  readingMinutes={readingMinutes}
+  {headings}
+  {relatedPosts}
+>
+  <Content />
+</PostLayout>

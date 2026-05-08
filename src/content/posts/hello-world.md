@@ -5,7 +5,6 @@ category: "Tech"
 tags: ["astro", "blog"]
 excerpt: "Welcome to my new Astro blog."
 pinned: true
-lang: "zh"
 ---
 
 ## Welcome

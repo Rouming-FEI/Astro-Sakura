@@ -1,0 +1,701 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import zh from '../i18n/zh';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const sorted = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+// Group by category
+const catMap = new Map<string, typeof posts>();
+for (const p of sorted) {
+  const c = p.data.category || '未分类';
+  const list = catMap.get(c) ?? [];
+  list.push(p);
+  catMap.set(c, list);
+}
+
+// Group by tag
+const tagMap = new Map<string, typeof posts>();
+for (const p of sorted) {
+  for (const t of p.data.tags ?? []) {
+    const list = tagMap.get(t) ?? [];
+    list.push(p);
+    tagMap.set(t, list);
+  }
+}
+const sortedTags = Array.from(tagMap).sort((a, b) => b[1].length - a[1].length);
+
+// Group by year
+const yearMap = new Map<string, typeof posts>();
+for (const p of sorted) {
+  const y = new Date(p.data.date).getFullYear().toString();
+  const list = yearMap.get(y) ?? [];
+  list.push(p);
+  yearMap.set(y, list);
+}
+const sortedYears = Array.from(yearMap).sort((a, b) => b[0].localeCompare(a[0]));
+
+// Pre-compute year → months → posts for timeline
+type YearMonthTree = [string, [number, typeof posts][]][];
+const yearMonthTree: YearMonthTree = sortedYears.map(([year, yearPosts]) => {
+  const byMonth = new Map<number, typeof posts>();
+  for (const p of yearPosts) {
+    const m = new Date(p.data.date).getMonth();
+    const list = byMonth.get(m) ?? [];
+    list.push(p);
+    byMonth.set(m, list);
+  }
+  return [year, Array.from(byMonth).sort((a, b) => b[0] - a[0])];
+});
+
+// Helpers
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('zh-CN');
+const fmtShort = (d: string) => new Date(d).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+---
+
+<BaseLayout title={zh.categories}>
+  <div class="categories-page">
+    <h1 class="page-title">{zh.categories}</h1>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="categories">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        {zh.allCategories}
+      </button>
+      <button class="tab" data-tab="tags">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        {zh.allTags}
+      </button>
+      <button class="tab" data-tab="timeline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        {zh.timeline}
+      </button>
+    </nav>
+
+    <!-- Categories Panel -->
+    <div class="tab-panel active" id="panel-categories">
+      <div class="cat-grid">
+        {Array.from(catMap).sort((a, b) => b[1].length - a[1].length).map(([cat, catPosts]) => {
+          const years = [...new Set(catPosts.map(p => new Date(p.data.date).getFullYear()))].sort().reverse();
+          const recent = catPosts.slice(0, 5);
+          return (
+            <details class="cat-card" id={`cat-${cat}`}>
+              <summary class="cat-header">
+                <span class="cat-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </span>
+                <span class="cat-name">{cat}</span>
+                <span class="cat-count">{catPosts.length}</span>
+                <span class="cat-chevron">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </summary>
+              <div class="cat-meta">
+                {years.length > 1 ? `${years[years.length - 1]} - ${years[0]}` : years[0]}
+              </div>
+              <ul class="post-list">
+                {catPosts.map(p => (
+                  <li class:list={{ pinned: p.data.pinned }}>
+                    <time datetime={p.data.date}>{fmtDate(p.data.date)}</time>
+                    <a href={`/posts/${p.id}/`}>
+                      {p.data.pinned && <span class="pin-dot">&#x1F4CC;</span>}
+                      {p.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          );
+        })}
+      </div>
+      {catMap.size === 0 && <p class="empty">{zh.noCategory}</p>}
+    </div>
+
+    <!-- Tags Panel -->
+    <div class="tab-panel" id="panel-tags">
+      <div class="tag-cloud">
+        {sortedTags.map(([tag, tagPosts]) => (
+          <button class="tag-chip" data-tag={tag} data-count={tagPosts.length}>
+            {tag}
+            <span class="chip-count">{tagPosts.length}</span>
+          </button>
+        ))}
+      </div>
+      <div class="tag-result" id="tag-result">
+        <div class="tag-result-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <span>点击标签查看相关文章</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Panel -->
+    <div class="tab-panel" id="panel-timeline">
+      <div class="timeline">
+        {yearMonthTree.map(([year, months], yi) => (
+          <section class="tl-section">
+            <div class="tl-marker">
+              <div class="tl-dot"></div>
+              {yi < yearMonthTree.length - 1 && <div class="tl-line"></div>}
+            </div>
+            <div class="tl-body">
+              <h2 class="tl-year">{year}</h2>
+              <div class="tl-months">
+                {months.map(([month, mPosts]) => (
+                  <div class="tl-month-group">
+                    <h3 class="tl-month">{month + 1}月</h3>
+                    <ul class="post-list">
+                      {mPosts.map(p => (
+                        <li>
+                          <time datetime={p.data.date}>{fmtShort(p.data.date)}</time>
+                          <a href={`/posts/${p.id}/`}>{p.data.title}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function switchTab(name: string) {
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    const targetTab = document.querySelector(`.tab[data-tab="${name}"]`);
+    const targetPanel = document.getElementById(`panel-${name}`);
+    if (targetTab) targetTab.classList.add('active');
+    if (targetPanel) targetPanel.classList.add('active');
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab!));
+  });
+
+  // Tag cloud interaction
+  const tagChips = document.querySelectorAll<HTMLButtonElement>('.tag-chip');
+  const tagResult = document.getElementById('tag-result')!;
+  let activeTag: string | null = null;
+
+  tagChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag!;
+      if (activeTag === tag) {
+        // Deselect
+        activeTag = null;
+        chip.classList.remove('active');
+        tagResult.innerHTML = `
+          <div class="tag-result-placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <span>点击标签查看相关文章</span>
+          </div>`;
+        return;
+      }
+      // Select
+      tagChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeTag = tag;
+      // Find posts for this tag — scrape from DOM
+      const panel = document.getElementById('panel-tags');
+      const existingList = panel?.querySelector(`.tag-chip[data-tag="${CSS.escape(tag)}"]`);
+      const count = parseInt(chip.dataset.count || '0');
+      tagResult.innerHTML = `
+        <div class="tag-result-header">
+          <span># ${escapeHtml(tag)}</span>
+          <span class="tag-result-count">${count} 篇文章</span>
+        </div>
+        <div class="tag-result-list" id="tag-result-list">加载中...</div>
+      `;
+      // Fetch from search index for the actual post data
+      fetch('/search-index.json')
+        .then(r => r.json())
+        .then((data: Array<{title:string;slug:string;date:string;tags:string[]}>) => {
+          const filtered = data.filter(p => p.tags.includes(tag));
+          const listEl = document.getElementById('tag-result-list');
+          if (listEl) {
+            listEl.innerHTML = filtered.map(p => `
+              <a href="/posts/${p.slug}/" class="tag-post-item">
+                <time>${new Date(p.date).toLocaleDateString('zh-CN')}</time>
+                <span>${escapeHtml(p.title)}</span>
+              </a>
+            `).join('');
+          }
+        })
+        .catch(() => {
+          const listEl = document.getElementById('tag-result-list');
+          if (listEl) listEl.innerHTML = '<span class="empty-inline">加载失败</span>';
+        });
+    });
+  });
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Handle query params for direct linking
+  const params = new URLSearchParams(window.location.search);
+  const qCat = params.get('category');
+  const qTag = params.get('tag');
+  const qYear = params.get('year');
+
+  if (qCat) {
+    switchTab('categories');
+    setTimeout(() => {
+      const catCard = document.getElementById(`cat-${CSS.escape(qCat)}`);
+      if (catCard) {
+        (catCard as HTMLDetailsElement).open = true;
+        catCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  } else if (qTag) {
+    switchTab('tags');
+    setTimeout(() => {
+      const chip = document.querySelector<HTMLButtonElement>(`.tag-chip[data-tag="${CSS.escape(qTag)}"]`);
+      if (chip) { chip.click(); chip.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }, 100);
+  } else if (qYear) {
+    switchTab('timeline');
+    setTimeout(() => {
+      const headings = document.querySelectorAll('#panel-timeline .tl-year');
+      headings.forEach(h => {
+        if (h.textContent?.trim() === qYear) {
+          h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }, 100);
+  }
+</script>
+
+<style>
+  .categories-page {
+    max-width: var(--content-width);
+    margin: 80px auto 0;
+    padding: 0 20px 60px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    margin: 0 0 24px;
+    text-align: center;
+  }
+
+  /* ===== Tabs ===== */
+  .tabs {
+    display: inline-flex;
+    gap: 6px;
+    margin: 0 auto 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 5px;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    white-space: nowrap;
+    background: transparent;
+    border: none;
+    border-radius: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+  }
+  .tab svg { flex-shrink: 0; }
+  .tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(117, 149, 232, 0.3);
+  }
+  .tab:not(.active):hover {
+    color: var(--text);
+    background: var(--accent);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ===== Categories Grid ===== */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+  }
+
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.2s;
+  }
+  .cat-card[open] {
+    border-color: var(--primary);
+  }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+  }
+  .cat-header::-webkit-details-marker { display: none; }
+
+  .cat-icon {
+    color: var(--primary);
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .cat-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+
+  .cat-count {
+    font-size: 0.75rem;
+    background: var(--accent);
+    color: var(--text-muted);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  .cat-chevron {
+    display: flex;
+    transition: transform 0.25s;
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+  .cat-card[open] .cat-chevron {
+    transform: rotate(180deg);
+  }
+
+  .cat-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0 16px 10px;
+    opacity: 0.7;
+  }
+
+  .cat-card .post-list {
+    list-style: none;
+    padding: 0 16px 14px;
+    margin: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+
+  .cat-card .post-list li {
+    display: flex;
+    gap: 12px;
+    padding: 5px 0;
+    font-size: 0.88rem;
+    align-items: baseline;
+  }
+  .cat-card .post-list li + li {
+    border-top: 1px solid var(--border);
+  }
+  .cat-card .post-list time {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    min-width: 100px;
+  }
+  .cat-card .post-list a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .cat-card .post-list a:hover { color: var(--primary); }
+  .cat-card .post-list li.pinned a { font-weight: 600; }
+
+  .pin-dot {
+    font-size: 0.65rem;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* ===== Tags Cloud ===== */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-family: inherit;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  .tag-chip:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .tag-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .tag-chip.active .chip-count {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+  }
+
+  .chip-count {
+    font-size: 0.7rem;
+    background: var(--accent);
+    color: var(--text-muted);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  /* Tag result panel */
+  .tag-result {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-height: 120px;
+    overflow: hidden;
+  }
+
+  .tag-result :global(.tag-result-placeholder) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .tag-result :global(.tag-result-header) {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .tag-result :global(.tag-result-count) {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .tag-result :global(.tag-result-list) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+  }
+
+  .tag-result :global(.tag-post-item) {
+    display: flex;
+    gap: 16px;
+    padding: 9px 20px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+  }
+  .tag-result :global(.tag-post-item:hover) { background: var(--accent); }
+  .tag-result :global(.tag-post-item time) {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+  .tag-result :global(.tag-post-item span) { color: var(--text); }
+  .tag-result :global(.tag-post-item:hover span) { color: var(--primary); }
+
+  .tag-result :global(.empty-inline) {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  /* ===== Timeline ===== */
+  .timeline {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .tl-section {
+    display: flex;
+    gap: 0;
+  }
+
+  .tl-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 32px;
+    flex-shrink: 0;
+  }
+
+  .tl-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-top: 10px;
+    box-shadow: 0 0 0 4px var(--surface), 0 0 0 5px var(--primary);
+  }
+
+  .tl-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    margin-top: -4px;
+  }
+
+  .tl-body {
+    flex: 1;
+    padding-left: 20px;
+    padding-bottom: 32px;
+    min-width: 0;
+  }
+
+  .tl-year {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 12px;
+    font-family: var(--font-serif);
+  }
+
+  .tl-month-group {
+    margin-bottom: 8px;
+  }
+
+  .tl-month {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 12px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .tl-body .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tl-body .post-list li {
+    display: flex;
+    gap: 12px;
+    padding: 5px 0;
+    font-size: 0.9rem;
+    align-items: baseline;
+  }
+
+  .tl-body .post-list time {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+
+  .tl-body .post-list a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .tl-body .post-list a:hover { color: var(--primary); }
+
+  /* ===== Shared ===== */
+  .empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 20px;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 640px) {
+    .tabs {
+      display: flex;
+      width: 100%;
+      position: static;
+      transform: none;
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      justify-content: center;
+      padding: 9px 8px;
+      font-size: 0.82rem;
+      gap: 4px;
+    }
+    .tab svg { width: 14px; height: 14px; }
+
+    .cat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cat-card .post-list time {
+      min-width: 80px;
+      font-size: 0.72rem;
+    }
+
+    .tag-result :global(.tag-post-item) {
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 16px;
+    }
+    .tag-result :global(.tag-post-item time) { min-width: unset; }
+
+    .tl-marker { width: 24px; }
+    .tl-dot { width: 10px; height: 10px; }
+    .tl-year { font-size: 1.2rem; }
+  }
+
+  @media (max-width: 400px) {
+    .cat-card .post-list li {
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tab {
+      font-size: 0.75rem;
+      padding: 8px 6px;
+    }
+  }
+</style>

@@ -12,18 +12,8 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     excerpt: z.string().optional(),
     thumbnail: z.string().optional(),
-    lang: z.enum(['zh', 'ja', 'fr']).default('zh'),
     draft: z.boolean().default(false),
   }),
 });
 
-const pages = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/pages' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string().optional(),
-    lang: z.enum(['zh', 'ja', 'fr']).default('zh'),
-  }),
-});
-
-export const collections = { posts, pages };
+export const collections = { posts };

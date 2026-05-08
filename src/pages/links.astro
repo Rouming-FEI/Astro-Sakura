@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import zh from '../i18n/zh';
+
+const links = siteConfig.links ?? [];
+---
+
+<BaseLayout title={zh.links}>
+  <div class="links-page">
+    <h1 class="page-title">{zh.links}</h1>
+
+    {links.length > 0 ? (
+      <div class="links-grid">
+        {links.map(link => (
+          <a href={link.url} target="_blank" rel="noopener" class="link-card">
+            <img src={link.avatar} alt={link.title} loading="lazy" class="link-avatar" />
+            <div class="link-info">
+              <span class="link-name">{link.title}</span>
+              <span class="link-desc">{link.description}</span>
+            </div>
+            <svg class="link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="links-empty">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <h2>暂无友链</h2>
+        <p>在 <code>site.ts</code> 的 <code>links</code> 数组中添加好友链接</p>
+        <pre>links: [&#123; title: '站点名', url: 'https://...', avatar: '/avatars/friend.png', description: '简介' &#125;]</pre>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .links-page {
+    max-width: calc(var(--content-width) + 100px);
+    margin: 80px auto 0;
+    padding: 0 20px 60px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    margin: 0 0 32px;
+    text-align: center;
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(117, 149, 232, 0.12);
+    border-color: var(--primary);
+  }
+
+  .link-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--accent);
+  }
+
+  .link-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .link-name {
+    font-weight: 600;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .link-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .link-arrow {
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.2s, transform 0.2s;
+    color: var(--primary);
+  }
+  .link-card:hover .link-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .links-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .links-empty h2 {
+    font-size: 1.2rem;
+    margin: 16px 0 8px;
+    color: var(--text);
+  }
+  .links-empty p {
+    font-size: 0.9rem;
+    margin: 0 0 16px;
+  }
+  .links-empty pre {
+    display: inline-block;
+    text-align: left;
+    background: var(--accent);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .links-empty code {
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 500px) {
+    .links-grid {
+      grid-template-columns: 1fr;
+    }
+    .link-avatar {
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>

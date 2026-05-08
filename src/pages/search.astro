@@ -1,0 +1,441 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import zh from '../i18n/zh';
+---
+
+<BaseLayout title={zh.search}>
+  <div class="search-page">
+    <div class="search-hero">
+      <div class="search-input-wrapper">
+        <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="输入关键词搜索文章..."
+          autocomplete="off"
+          autofocus
+        />
+        <kbd class="shortcut-hint">ESC</kbd>
+      </div>
+    </div>
+    <div id="search-meta"></div>
+    <div id="search-results"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  interface PostEntry {
+    title: string;
+    slug: string;
+    excerpt: string;
+    tags: string[];
+    date: string;
+    category?: string;
+  }
+
+  let posts: PostEntry[] | null = null;
+  let fetchError = false;
+
+  fetch('/search-index.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => { posts = data; })
+    .catch(() => { fetchError = true; });
+
+  const input = document.getElementById('search-input') as HTMLInputElement;
+  const results = document.getElementById('search-results')!;
+  const meta = document.getElementById('search-meta')!;
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function highlight(text: string, q: string) {
+    if (!q) return escapeHtml(text);
+    const escaped = escapeHtml(text);
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return escaped.replace(re, '<em>$1</em>');
+  }
+
+  function fmtDate(d: string) {
+    const date = new Date(d);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days < 1) return '今天';
+    if (days < 2) return '昨天';
+    if (days < 7) return `${days} 天前`;
+    if (days < 365) return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function dateYear(d: string) {
+    return new Date(d).getFullYear().toString();
+  }
+
+  function bestExcerpt(p: PostEntry, q: string): string {
+    const text = p.excerpt || '';
+    if (!q || !text) return text;
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx === -1) return text.slice(0, 120);
+    const start = Math.max(0, idx - 30);
+    const end = Math.min(text.length, idx + q.length + 90);
+    let snippet = text.slice(start, end);
+    if (start > 0) snippet = '…' + snippet;
+    if (end < text.length) snippet = snippet + '…';
+    return snippet;
+  }
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+      results.innerHTML = '';
+      meta.innerHTML = '';
+      return;
+    }
+
+    if (posts === null) {
+      if (fetchError) {
+        meta.innerHTML = '<span class="meta-error">索引加载失败，请刷新页面重试</span>';
+      } else {
+        meta.innerHTML = '<span class="meta-loading"><span class="dot-pulse"></span> 索引加载中...</span>';
+      }
+      return;
+    }
+
+    const filtered = posts.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.excerpt.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q))
+    );
+
+    const shown = filtered.slice(0, 30);
+    meta.innerHTML = `<span class="meta-text">找到 <strong>${filtered.length}</strong> 篇文章${filtered.length > 30 ? '，显示前 30 篇' : ''}</span>`;
+
+    if (shown.length === 0) {
+      results.innerHTML = `
+        <div class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+          <p>没有找到相关文章</p>
+          <span>试试其他关键词吧</span>
+        </div>`;
+      return;
+    }
+
+    results.innerHTML = shown.map(p => {
+      const snippet = bestExcerpt(p, q);
+      return `
+      <article class="result-card">
+        <a href="/posts/${p.slug}/" class="card-main-link">
+          <h2 class="card-title">${highlight(p.title, q)}</h2>
+        </a>
+        ${snippet ? `<p class="card-excerpt">${highlight(snippet, q)}</p>` : ''}
+        <div class="card-footer">
+          <a href="/categories/?year=${dateYear(p.date)}" class="card-meta-item card-date">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${fmtDate(p.date)}
+          </a>
+          ${p.category ? `
+            <a href="/categories/?category=${encodeURIComponent(p.category)}" class="card-meta-item card-category">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              ${escapeHtml(p.category)}
+            </a>
+          ` : ''}
+          ${p.tags.length ? `
+            <span class="card-tags">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              ${p.tags.slice(0, 5).map(t => `<a href="/categories/?tag=${encodeURIComponent(t)}" class="card-tag">${escapeHtml(t)}</a>`).join('')}
+            </span>
+          ` : ''}
+        </div>
+      </article>`;
+    }).join('');
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { input.value = ''; input.dispatchEvent(new Event('input')); input.blur(); }
+  });
+</script>
+
+<style>
+  .search-page {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 100px 20px 60px;
+    min-height: 100vh;
+  }
+
+  .search-hero {
+    margin-bottom: 32px;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    opacity: 0.4;
+    transition: opacity 0.25s, color 0.25s;
+  }
+  .search-input-wrapper:focus-within .input-icon {
+    opacity: 0.7;
+    color: var(--primary);
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 16px 100px 16px 50px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  #search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(117, 149, 232, 0.1);
+  }
+  #search-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .shortcut-hint {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    background: var(--accent);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  #search-meta {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .meta-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .meta-text strong {
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .meta-error {
+    font-size: 0.85rem;
+    color: #e0557a;
+  }
+
+  .meta-loading {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: inline-block;
+    animation: dot-pulse 1.2s infinite ease-in-out;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.75); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  #search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ===== Card ===== */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    position: relative;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .result-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 20px rgba(117, 149, 232, 0.1);
+  }
+
+  /* Title — the focal point */
+  .card-main-link {
+    text-decoration: none;
+  }
+  .card-title {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+  .card-main-link:hover .card-title {
+    color: var(--primary);
+  }
+  .card-title :global(em) {
+    font-style: normal;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+  }
+
+  /* Excerpt */
+  .card-excerpt {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 10px 0 0;
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-excerpt :global(em) {
+    font-style: normal;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Footer bar — date / category / tags */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* Shared meta item base */
+  .card-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .card-meta-item:hover {
+    opacity: 0.8;
+  }
+
+  /* Date — muted */
+  .card-date {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    opacity: 0.65;
+  }
+  .card-date svg {
+    opacity: 0.5;
+  }
+  .card-date:hover {
+    opacity: 0.9;
+    color: var(--text);
+  }
+
+  /* Category — distinct accent color */
+  .card-category {
+    color: #c0795a;
+    font-weight: 600;
+  }
+  .card-category svg {
+    opacity: 0.7;
+  }
+  .card-category:hover {
+    opacity: 0.8;
+  }
+
+  /* Tags row */
+  .card-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-tags > svg {
+    color: var(--text-muted);
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+
+  .card-tag {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: var(--accent);
+    padding: 2px 8px;
+    border-radius: 5px;
+    text-decoration: none;
+    opacity: 0.75;
+    transition: color 0.2s, background 0.2s, opacity 0.2s;
+    margin-right: 6px;
+  }
+  .card-tag:hover {
+    opacity: 1;
+    color: var(--primary);
+    background: rgba(117, 149, 232, 0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state p {
+    font-size: 1.1rem;
+    margin: 20px 0 6px;
+  }
+  .empty-state span {
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 500px) {
+    .search-page {
+      padding-top: 80px;
+    }
+    #search-input {
+      padding: 14px 80px 14px 42px;
+      font-size: 1rem;
+      border-radius: 14px;
+    }
+    .shortcut-hint { display: none; }
+    .result-card { padding: 16px 18px; }
+    .card-title { font-size: 1rem; }
+    .card-footer { gap: 10px; }
+  }
+</style>

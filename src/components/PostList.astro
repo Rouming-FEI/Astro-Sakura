@@ -1,25 +1,25 @@
 ---
 import PostCard from './PostCard.astro';
-import { getDict } from '../i18n/utils';
+import zh from '../i18n/zh';
 
 interface Post {
   title: string;
   slug: string;
   date: string;
+  updated?: string;
   excerpt?: string;
   thumbnail?: string;
   category?: string;
   tags?: string[];
   pinned?: boolean;
+  wordCount?: number;
 }
 
 interface Props {
   posts: Post[];
-  lang: string;
 }
 
-const { posts, lang } = Astro.props;
-const t = getDict(lang);
+const { posts } = Astro.props;
 
 const pinnedPosts = posts.filter(p => p.pinned);
 const normalPosts = posts.filter(p => !p.pinned);
@@ -31,19 +31,19 @@ const normalPosts = posts.filter(p => !p.pinned);
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
       <polyline points="14 2 14 8 20 8"/>
     </svg>
-    {t.posts}
+    {zh.posts}
   </h2>
 
   {pinnedPosts.length > 0 && (
     <div class="pinned-section">
-      {pinnedPosts.map(post => <PostCard {...post} {lang} />)}
+      {pinnedPosts.map(post => <PostCard {...post} />)}
     </div>
   )}
 
-  {normalPosts.map(post => <PostCard {...post} {lang} />)}
+  {normalPosts.map(post => <PostCard {...post} />)}
 
   {posts.length === 0 && (
-    <p class="empty">{t.noPosts}</p>
+    <p class="empty">{zh.noPosts}</p>
   )}
 </div>
 

@@ -1,13 +1,11 @@
 ---
-import { getDict } from '../i18n/utils';
+import zh from '../i18n/zh';
 
 interface Props {
-  lang: string;
   stats?: { posts: number; words: number; days: number };
 }
 
-const { lang, stats } = Astro.props;
-const t = getDict(lang);
+const { stats } = Astro.props;
 ---
 
 <aside class="sidebar">
@@ -15,15 +13,15 @@ const t = getDict(lang);
     <div class="stat-card">
       <div class="stat">
         <span class="stat-value">{stats.days}</span>
-        <span class="stat-label">{t.runningDays}</span>
+        <span class="stat-label">{zh.runningDays}</span>
       </div>
       <div class="stat">
         <span class="stat-value">{stats.posts}</span>
-        <span class="stat-label">{t.totalPosts}</span>
+        <span class="stat-label">{zh.totalPosts}</span>
       </div>
       <div class="stat">
         <span class="stat-value">{(stats.words / 1000).toFixed(1)}k</span>
-        <span class="stat-label">{t.totalWords}</span>
+        <span class="stat-label">{zh.totalWords}</span>
       </div>
     </div>
   )}

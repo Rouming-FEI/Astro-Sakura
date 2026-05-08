@@ -2,34 +2,59 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+
 import { siteConfig } from '../config/site';
 
 interface Props {
-  lang?: string;
   title?: string;
   description?: string;
   ogImage?: string;
   stats?: { posts: number; words: number; days: number };
+  noAnim?: boolean;
 }
 
 const {
-  lang = siteConfig.defaultLanguage,
   title = siteConfig.title,
   description = siteConfig.description,
-  ogImage = '/og-default.png',
+  ogImage = '/og-default.svg',
   stats,
+  noAnim = false,
 } = Astro.props;
 
 const pageTitle = title === siteConfig.title ? title : `${title} - ${siteConfig.title}`;
+const { fonts } = siteConfig;
+const googleFontsUrl =
+  `https://fonts.googleapis.com/css2?family=${
+    [fonts.serif, fonts.sans, fonts.mono].map(f => encodeURIComponent(f)).join('|')
+  }&display=swap`;
+const fontCSS =
+  `:root {
+    --font-serif: '${fonts.serif}', serif;
+    --font-sans: '${fonts.sans}', system-ui, sans-serif;
+    --font-mono: '${fonts.mono}', monospace;
+  }`;
 ---
 
 <!doctype html>
-<html lang={lang} dir="ltr">
+<html lang="zh" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+    <script is:inline>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else if (t === 'light') document.documentElement.classList.add('light');
+      })();
+      function getTheme() {
+        if (document.documentElement.classList.contains('dark')) return 'dark';
+        if (document.documentElement.classList.contains('light')) return 'light';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      window.getTheme = getTheme;
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#7090d0" />
+    <meta name="theme-color" content="#7595e8" />
 
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -39,33 +64,34 @@ const pageTitle = title === siteConfig.title ? title : `${title} - ${siteConfig.
     <link rel="alternate" type="application/rss+xml" title={siteConfig.title} href="/rss.xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC|Noto+Sans+SC|Fira+Code&display=swap" />
+    <link rel="stylesheet" href={googleFontsUrl} />
 
     <title>{pageTitle}</title>
+
+    <style is:inline set:html={fontCSS} />
 
     <meta name="astro-view-transitions-enabled" content="true" />
     <meta name="astro-view-transitions-fallback" content="swap" />
   </head>
   <body>
-    <Nav {lang} />
-    <main id="main-content">
+    <Nav />
+    <main id="main-content" class:list={{ 'no-enter-anim': noAnim }}>
       <slot />
     </main>
-    <Footer {lang} {stats} />
+    <Footer {stats} />
   </body>
 </html>
 
-<script is:inline>
-  function getTheme() {
-    if (document.documentElement.classList.contains('dark')) return 'dark';
-    if (document.documentElement.classList.contains('light')) return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  window.getTheme = getTheme;
-</script>
-
 <style is:global>
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scrollbar-gutter: stable; height: 100%; }
+  body { margin: 0; display: flex; flex-direction: column; min-height: 100%; }
+  #main-content { flex: 1; animation: page-enter 0.5s ease-out; }
+  #main-content.no-enter-anim { animation: none; }
+
+  @keyframes page-enter {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

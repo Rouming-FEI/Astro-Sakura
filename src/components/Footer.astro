@@ -1,49 +1,65 @@
 ---
 import { siteConfig } from '../config/site';
-import { getDict } from '../i18n/utils';
+import zh from '../i18n/zh';
 
-const { lang = siteConfig.defaultLanguage, stats } = Astro.props as {
-  lang?: string;
+const { stats } = Astro.props as {
   stats?: { posts: number; words: number; days: number };
 };
-const t = getDict(lang);
 ---
 
 <footer class="site-footer">
-  {siteConfig.footer.aplayer.enabled && (
-    <div class="aplayer-container">
-      <div id="aplayer"></div>
-    </div>
-  )}
+  <a href="#main-content" class="back-to-top" aria-label="Back to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </a>
 
   {stats && (
     <p class="site-stats">
-      {t.runningDays}: {stats.days} {t.days} &nbsp;·&nbsp;
-      {t.totalPosts}: {stats.posts} {t.articles} &nbsp;·&nbsp;
-      {t.totalWords}: {stats.words.toLocaleString()} {t.words}
+      {zh.runningDays}: {stats.days} {zh.days} &nbsp;·&nbsp;
+      {zh.totalPosts}: {stats.posts} {zh.articles} &nbsp;·&nbsp;
+      {zh.totalWords}: {stats.words.toLocaleString()} {zh.words}
     </p>
   )}
 
   <div class="footer-info">
-    <p>&copy; {new Date().getFullYear()} {siteConfig.title}. {t.allRightsReserved}.</p>
-    <p class="credit">Theme Sakurairo &middot; {t.poweredBy}</p>
+    <p>&copy; {new Date().getFullYear()} {siteConfig.title} &middot; {zh.allRightsReserved}</p>
+    <p class="credit">{zh.poweredBy}</p>
   </div>
 </footer>
 
 <style>
   .site-footer {
     margin-top: 60px;
-    padding: 24px 20px;
+    padding: 32px 20px 24px;
     text-align: center;
     background: var(--surface);
     border-top: 1px solid var(--border);
     font-size: 0.825rem;
     color: var(--text-muted);
+    position: relative;
   }
 
-  .aplayer-container {
-    max-width: var(--content-width);
-    margin: 0 auto 16px;
+  .back-to-top {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(117, 149, 232, 0.3);
+  }
+  .back-to-top:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(117, 149, 232, 0.4);
   }
 
   .site-stats {
@@ -55,7 +71,8 @@ const t = getDict(lang);
   }
 
   .credit {
-    margin-top: 4px;
-    font-size: 0.75rem;
+    margin-top: 2px;
+    font-size: 0.72rem;
+    opacity: 0.7;
   }
 </style>

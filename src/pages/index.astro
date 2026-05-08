@@ -1,5 +1,38 @@
 ---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Cover from '../components/Cover.astro';
+import PostList from '../components/PostList.astro';
 import { siteConfig } from '../config/site';
-const url = new URL(Astro.url);
-return Astro.redirect(`/${siteConfig.defaultLanguage}/`, 302);
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const posts = allPosts
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .map(p => ({
+    title: p.data.title,
+    slug: p.id,
+    date: p.data.date,
+    excerpt: p.data.excerpt,
+    thumbnail: p.data.thumbnail,
+    category: p.data.category,
+    tags: p.data.tags,
+    updated: p.data.updated,
+    pinned: p.data.pinned,
+    wordCount: (p.body ?? '').replace(/\s/g, '').length,
+  }));
 ---
+
+<BaseLayout title={siteConfig.title} noAnim>
+  <Cover />
+  <section class="home-content">
+    <PostList {posts} />
+  </section>
+</BaseLayout>
+
+<style>
+  .home-content {
+    max-width: var(--content-width);
+    margin: 40px auto 0;
+    padding: 0 20px;
+  }
+</style>

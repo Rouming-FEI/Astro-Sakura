@@ -28,5 +28,16 @@ export default {
   scrollDown: '向下滚动',
   allRightsReserved: '版权所有',
   poweredBy: '由 Astro 驱动',
-  langSwitch: '切换语言',
+
+  categories: '分类',
+  tags: '标签',
+  timeline: '时间线',
+  allCategories: '全部分类',
+  allTags: '全部标签',
+  noCategory: '暂无分类',
+  noTags: '暂无标签',
+  bangumi: '追番',
+  bilibili: 'B站收藏',
+  steam: 'Steam 游戏库',
+  videos: '追剧',
 };

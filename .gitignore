@@ -2,5 +2,8 @@ node_modules/
 dist/
 .worktrees/
 .superpowers/
+.claude/
+.astro/
+docs/
 .DS_Store
 *.local
