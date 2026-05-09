@@ -2,7 +2,7 @@
 import { siteConfig } from '../config/site';
 
 const images = siteConfig.cover.images ?? [];
-const useRandom = siteConfig.cover.randomPool && images.length > 1;
+const useRandom = siteConfig.cover.randomPool && images.length > 0;
 const coverImage = images.length > 0
   ? (useRandom ? images[Math.floor(Math.random() * images.length)] : images[0])
   : null;
