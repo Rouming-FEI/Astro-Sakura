@@ -4,6 +4,7 @@ dist/
 .superpowers/
 .claude/
 .astro/
+.content-cache/
 docs/
 .DS_Store
 *.local
