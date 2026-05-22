@@ -1,16 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { siteConfig } from '../config/site';
+import zh from '../i18n/zh';
 ---
 
 <BaseLayout title="404">
   <div class="not-found">
     <div class="nf-code">404</div>
-    <h1>页面不存在</h1>
-    <p>你访问的页面可能已被删除、移动，或者从未存在过。</p>
+    <h1>{zh.pageNotFound}</h1>
+    <p>{zh.pageNotFoundDesc}</p>
     <div class="nf-actions">
-      <a href="/" class="nf-btn">返回首页</a>
-      <a href="/search/" class="nf-btn secondary">搜索文章</a>
+      <a href="/" class="nf-btn">{zh.backHome}</a>
+      <a href="/search/" class="nf-btn secondary">{zh.search}</a>
     </div>
   </div>
 </BaseLayout>

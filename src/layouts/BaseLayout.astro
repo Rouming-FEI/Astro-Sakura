@@ -33,6 +33,12 @@ const fontCSS =
     --font-sans: '${fonts.sans}', system-ui, sans-serif;
     --font-mono: '${fonts.mono}', monospace;
   }`;
+
+const coverImages = siteConfig.cover.images ?? [];
+const useRandomCover = siteConfig.cover.randomPool && coverImages.length > 0;
+const coverScript = coverImages.length > 0
+  ? `if(!document.documentElement.style.getPropertyValue('--cover-image')){var imgs=${JSON.stringify(coverImages)};var r=${useRandomCover};var img=r?imgs[Math.floor(Math.random()*imgs.length)]:imgs[0];document.documentElement.style.setProperty('--cover-image','url('+img+')');}`
+  : '';
 ---
 
 <!doctype html>
@@ -52,9 +58,10 @@ const fontCSS =
       }
       window.getTheme = getTheme;
     </script>
+    {coverScript && <script is:inline set:html={coverScript} />}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#7595e8" />
+    <meta name="theme-color" id="theme-color-meta" content="#7595e8" />
 
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -79,6 +86,15 @@ const fontCSS =
       <slot />
     </main>
     <Footer {stats} />
+    <script>
+      function updateThemeColor() {
+        var c = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        if (c) document.getElementById('theme-color-meta').setAttribute('content', c);
+      }
+      updateThemeColor();
+      var observer = new MutationObserver(updateThemeColor);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    </script>
   </body>
 </html>
 

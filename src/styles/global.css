@@ -3,7 +3,7 @@
 @import 'katex/dist/katex.css';
 
 html {
-  background: url('/images/cover/2.png') fixed center / cover;
+  background: var(--cover-image, var(--cover-gradient)) fixed center / cover;
   height: 100%;
 }
 

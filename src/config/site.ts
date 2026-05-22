@@ -178,7 +178,9 @@ export const siteConfig: SiteConfig = {
   // ----- 封面背景 -----
   cover: {
     randomPool: true,
-    images: ['/images/cover/2.png'],
+    images: ['/images/cover/2.png',
+      '/images/cover/117966929_p0-無題.jpg'
+    ],
   },
 
   // ----- 关于页面 -----
