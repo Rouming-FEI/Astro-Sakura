@@ -1,0 +1,25 @@
+/*
+ * 自托管字体配置
+ * 使用方式：
+ * 1. 将字体文件（.woff2 推荐）放入 public/fonts/ 目录
+ * 2. 在此文件添加 @font-face 声明
+ * 3. 在 src/config/site.ts 中设置 fonts.source = 'local'，填入对应字体名
+ *
+ * 示例：
+ *
+ * @font-face {
+ *   font-family: 'My Serif EN';
+ *   src: url('/fonts/my-serif-en.woff2') format('woff2');
+ *   font-weight: 400;
+ *   font-style: normal;
+ *   font-display: swap;
+ * }
+ *
+ * @font-face {
+ *   font-family: 'My Serif CN';
+ *   src: url('/fonts/my-serif-cn.woff2') format('woff2');
+ *   font-weight: 400;
+ *   font-style: normal;
+ *   font-display: swap;
+ * }
+ */

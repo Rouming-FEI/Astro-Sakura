@@ -211,7 +211,38 @@ html.dark {
 
 ### 字体
 
-在 `src/config/site.ts` 的 `fonts` 中修改即可，支持所有 Google Fonts 上可用的字体。格式为字体名称，空格无需转义（如 `'Noto Serif SC'`）。
+在 `src/config/site.ts` 的 `fonts` 中修改。支持两种来源：
+
+**Google Fonts（默认）**：设置 `source: 'google'`，`serif` / `sans` 各指定 `en`（英文）和 `cn`（中文）字体名，`mono` 指定等宽字体名。中英文以 `en, cn, fallback` 顺序排列，浏览器自动对拉丁字符用英文字体、CJK 字符用中文字体。
+
+```ts
+fonts: {
+  source: 'google',
+  serif: { en: 'Noto Serif', cn: 'Noto Serif SC' },
+  sans: { en: 'Noto Sans', cn: 'Noto Sans SC' },
+  mono: 'Fira Code',
+}
+```
+
+**自行上传字体**：设置 `source: 'local'`，将字体文件（推荐 .woff2）放入 `public/fonts/`，在 `src/styles/fonts.css` 中编写 `@font-face` 声明，然后在配置中填入 `@font-face` 中定义的字体名。
+
+```css
+/* src/styles/fonts.css */
+@font-face {
+  font-family: 'My Serif CN';
+  src: url('/fonts/my-serif-cn.woff2') format('woff2');
+  font-display: swap;
+}
+```
+
+```ts
+// src/config/site.ts
+fonts: {
+  source: 'local',
+  serif: { en: 'Georgia', cn: 'My Serif CN' },
+  ...
+}
+```
 
 ### 背景图
 

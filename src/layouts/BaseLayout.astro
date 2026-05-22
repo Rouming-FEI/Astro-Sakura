@@ -23,14 +23,16 @@ const {
 
 const pageTitle = title === siteConfig.title ? title : `${title} - ${siteConfig.title}`;
 const { fonts } = siteConfig;
-const googleFontsUrl =
+const isLocal = fonts.source === 'local';
+const googleFontsUrl = isLocal ? '' :
   `https://fonts.googleapis.com/css2?family=${
-    [fonts.serif, fonts.sans, fonts.mono].map(f => encodeURIComponent(f)).join('|')
+    [fonts.serif.en, fonts.serif.cn, fonts.sans.en, fonts.sans.cn, fonts.mono]
+      .map(f => encodeURIComponent(f)).join('|')
   }&display=swap`;
 const fontCSS =
   `:root {
-    --font-serif: '${fonts.serif}', serif;
-    --font-sans: '${fonts.sans}', system-ui, sans-serif;
+    --font-serif: '${fonts.serif.en}', '${fonts.serif.cn}', serif;
+    --font-sans: '${fonts.sans.en}', '${fonts.sans.cn}', system-ui, sans-serif;
     --font-mono: '${fonts.mono}', monospace;
   }`;
 
@@ -70,8 +72,12 @@ const coverScript = coverImages.length > 0
 
     <link rel="alternate" type="application/rss+xml" title={siteConfig.title} href="/rss.xml" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href={googleFontsUrl} />
+    {!isLocal && (
+      <>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="stylesheet" href={googleFontsUrl} />
+      </>
+    )}
 
     <title>{pageTitle}</title>
 

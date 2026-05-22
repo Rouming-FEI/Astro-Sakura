@@ -24,11 +24,20 @@ export interface SiteConfig {
   // ========== 字体 ==========
 
   fonts: {
-    /** 衬线字体（标题使用），需为 Google Fonts 上可用的字体名 */
-    serif: string;
-    /** 无衬线字体（正文、UI），需为 Google Fonts 上可用的字体名 */
-    sans: string;
-    /** 等宽字体（代码），需为 Google Fonts 上可用的字体名 */
+    /** 'google' = 从 Google Fonts 加载；'local' = 自行上传字体到 public/fonts/ */
+    source: 'google' | 'local';
+
+    /** 衬线字体（标题）。en = 英文/Latin 字体，cn = 中文/CJK 字体 */
+    serif: {
+      en: string;
+      cn: string;
+    };
+    /** 无衬线字体（正文、UI）。en = 英文/Latin 字体，cn = 中文/CJK 字体 */
+    sans: {
+      en: string;
+      cn: string;
+    };
+    /** 等宽字体（代码），不分中英文 */
     mono: string;
   };
 
@@ -151,9 +160,12 @@ export const siteConfig: SiteConfig = {
   startDate: '2024-01-01',
 
   // ----- 字体 -----
+  // source: 'google' = Google Fonts, 'local' = 自行上传字体 (见 src/styles/fonts.css)
+  // serif/sans: en=英文/Latin字体 cn=中文/CJK字体, 浏览器自动按字符集回落
   fonts: {
-    serif: 'Noto Serif SC',
-    sans: 'Noto Sans SC',
+    source: 'google',
+    serif: { en: 'Noto Serif', cn: 'Noto Serif SC' },
+    sans: { en: 'Noto Sans', cn: 'Noto Sans SC' },
     mono: 'Fira Code',
   },
 
