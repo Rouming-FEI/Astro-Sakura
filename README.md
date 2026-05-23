@@ -1,6 +1,4 @@
-# Sakurairo Astro 静态博客
-
-基于 Sakurairo 主题设计迁移的 Astro 静态博客。
+# Sakura Astro 静态博客
 
 **特性**：日/夜间模式 · 全屏封面 · 打字机效果 · 全文搜索 · 代码高亮 (200+ 语言) · KaTeX 数学公式 · RSS · Giscus 评论 · 友链 · 追番 · Steam 游戏库
 
